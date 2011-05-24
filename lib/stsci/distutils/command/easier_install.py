@@ -1,6 +1,7 @@
 import os
 
 from ConfigParser import ConfigParser
+from distutils import log
 
 import pkg_resources
 
@@ -56,6 +57,15 @@ class LocalSourcesPackageIndex(PackageIndex):
         if dist:
             self.add(dist)
 
+    def fetch_distribution(self, requirement, tmpdir, force_scan=False,
+            source=False, develop_ok=False, local_index=None):
+        dist = PackageIndex.fetch_distribution(self, requirement, tmpdir,
+                                               force_scan, source, develop_ok,
+                                               local_index)
+        if dist:
+            log.info('Using %s from %s' % (dist, dist.location))
+        return dist
+
 
 class easier_install(easy_install):
     """
@@ -63,4 +73,20 @@ class easier_install(easy_install):
     its default PackageIndex implementation.
     """
 
+    command_name = 'easy_install'
+
     create_index = LocalSourcesPackageIndex
+
+    def process_distribution(self, requirement, dist, deps=True, *info):
+        """This version of process_distribution will force the package index to
+        search for local distributions before going out to PyPI when processing
+        a package's dependency.
+
+        It will already do this for the first dependency, but not for
+        subsequent dependencies--something I would consider a bug.
+        """
+
+        if self.package_index.to_scan is None:
+            self.package_index.to_scan = []
+        return easy_install.process_distribution(self, requirement, dist, deps,
+                                                 *info)
