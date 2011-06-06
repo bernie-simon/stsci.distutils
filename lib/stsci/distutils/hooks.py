@@ -37,6 +37,9 @@ def is_display_option():
     return False
 
 
+# TODO: I submitted a patch to make setup_hook accept multiple arguments (see
+# http://bugs.python.org/issue12240).  If this patch is accepted, then it will
+# eliminate the necessity for this hook.
 def chain_setup_hooks(config):
     """
     A meta-setup_hook, if you will, that allows running multiple setup_hooks in
@@ -75,21 +78,18 @@ def use_packages_root(config):
             sys.path.insert(0, root)
 
 
-def numpy_extension_hook(config):
-    """A distutils2 setup_hook needed for building extension modules that use
-    NumPy.
+def numpy_extension_hook(command_obj):
+    """A distutils2 pre-command hook for the build_ext command needed for
+    building extension modules that use NumPy.
 
-    To use this hook, add 'requires_numpy = True' to the setup.cfg section for
-    an extension module.  This hook will add the necessary numpy header paths
-    to the include_dirs option.
+    To use this hook, add 'numpy' to the list of include_dirs in setup.cfg
+    section for an extension module.  This hook will replace 'numpy' with the
+    necessary numpy header paths in the include_dirs option for that extension.
 
     Note: Although this function uses numpy, stsci.distutils does not depend on
-    numpy.  It is up to the distribution that uses this setup_hook to require
-    numpy.
+    numpy.  It is up to the distribution that uses this hook to require numpy
+    as a dependency.
     """
-
-    if is_display_option():
-        return
 
     try:
         import numpy
@@ -102,21 +102,11 @@ def numpy_extension_hook(config):
                          'Please install Numpy on your system first.\n\n')
         sys.exit(1)
 
-    includes = [numpy.get_include(), numpy.get_numarray_include()]
-    for section in config:
-        if not section.startswith('extension='):
+    includes = [numpy.get_numarray_include(), numpy.get_include()]
+    for extension in command_obj.extensions:
+        if 'numpy' not in extension.include_dirs:
             continue
-        options = config[section]
-        key = 'requires_numpy'
-        if key in options and strtobool(options[key]):
-            del options[key]
-            if 'include_dirs' in options:
-                option = options['include_dirs']
-                for include in includes:
-                    if include not in option:
-                        # Have to manipulate the option as a raw string, as it
-                        # has not been split into a list at this point
-                        option += '\n' + include
-                options['include_dirs'] = option
-            else:
-                options['include_dirs'] = '\n'.join(includes)
+        idx = extension.include_dirs.index('numpy')
+        for inc in includes:
+            extension.include_dirs.insert(idx, inc)
+        extension.include_dirs.remove('numpy')

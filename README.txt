@@ -21,12 +21,6 @@ Currently the main features of this package are a couple of setup_hook scripts.
 In distutils2, a setup_hook is a script that runs at the beginning of any
 pysetup command, and can modify the package configuration read from setup.cfg.
 
-It's worth noting that most of the setup_hook scripts implemented here would be
-better implemented as pre-command hook scripts: This is a feature of distutils2
-that allows hook scripts to run before *specific* pysetup commands (post-
-command hooks also exist).  However, until I add support for pre/post hooks to
-d2to1, these will have to be setup_hooks.
-
 stsci.distutils.hooks.chain_setup_hooks
 '''''''''''''''''''''''''''''''''''''''''
 This hook allows multiple setup_hooks to run.  Normally, the setup_hook option
@@ -34,6 +28,9 @@ in setup.cfg only allows one setup_hook to be specified.  Using this hook
 allows a `setup_hooks` option to be added to the `[global]` section of
 setup.cfg.  The hooks listed in `setup_hooks` are the executed in order as
 though they were combined into a single setup_hook.
+
+NOTE: I've added a patch to packaging that would allow the setup_hook option
+to take multiple values.  If that patch is accepted, this hook can be removed.
 
 stsci.distutils.hooks.use_packages_root
 '''''''''''''''''''''''''''''''''''''''''
@@ -44,14 +41,16 @@ specified--in this case it adds `''` to `sys.path`.
 
 stsci.distutils.hooks.numpy_extension_hook
 ''''''''''''''''''''''''''''''''''''''''''''
-This hook must be used to build extension modules that use Numpy.  To use this
-hook, `requires_numpy = True` must be added to the setup.cfg section for each
-extension module that uses Numpy.  The primary side-effect of this hook is to
-add the correct numpy include directories to `include_dirs`.
+This is a pre-command hook for the build_ext command.  To use it, add a
+[build_ext] section to your setup.cfg, and add to it:
 
-It should be noted that it would be more appropriate to implement this as a
-pre-hook for the build_ext command.  That will probably be done in a future
-version (hopefully before the first 'stable' release).
+    pre-hook.numpy-extension-hook = stsci.distutils.hooks.numpy_extension_hook
+
+This hook must be used to build extension modules that use Numpy.   The primary
+side-effect of this hook is to add the correct numpy include directories to
+`include_dirs`.  To use it, add 'numpy' to the 'include-dirs' option of each
+extension module that requires numpy to build.  The value 'numpy' will be
+replaced with the actual path to the numpy includes.
 
 stsci.distutils.hooks.is_display_option
 '''''''''''''''''''''''''''''''''''''''''
