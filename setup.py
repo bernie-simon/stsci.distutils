@@ -7,7 +7,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup
 
-from pkg_resources import working_set
+from pkg_resources import working_set, require
 
 
 # This is a workaround for http://bugs.python.org/setuptools/issue20; most
@@ -16,18 +16,27 @@ from pkg_resources import working_set
 # See also http://mail.python.org/pipermail/distutils-sig/2011-May/017812.html
 # for a description of the problem (in my example, package_A is d2to1 and
 # package_B is stsci.distutils).
+# This issue was fixed in distribute 0.6.17, but leaving in support for older
+# versions for now.
+try:
+    require('distribute>=0.6.19')
+    has_issue205 = False
+except:
+    has_issue205 = True
 
-save_entries = working_set.entries[:]
-save_entry_keys = working_set.entry_keys.copy()
-save_by_key = working_set.by_key.copy()
+if has_issue205:
+    save_entries = working_set.entries[:]
+    save_entry_keys = working_set.entry_keys.copy()
+    save_by_key = working_set.by_key.copy()
 
 try:
     setup(
-        setup_requires=['d2to1>=0.1.5'],
+        setup_requires=['d2to1>=0.2.2'],
         d2to1=True,
         use_2to3=True
     )
 finally:
-    working_set.entries = save_entries
-    working_set.entry_keys = save_entry_keys
-    working_set.by_key = save_by_key
+    if has_issue205:
+        working_set.entries = save_entries
+        working_set.entry_keys = save_entry_keys
+        working_set.by_key = save_by_key
