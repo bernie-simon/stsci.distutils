@@ -1,15 +1,5 @@
 import sys
 
-try:
-    from distutils2.util import strtobool
-except ImportError:
-    from distutils.util import strtobool
-
-try:
-    from distutils2.util import resolve_name
-except ImportError:
-    from d2to1.util import resolve_name
-
 
 def is_display_option():
     """A hack to test if one of the arguments passed to setup.py is a display
@@ -35,27 +25,6 @@ def is_display_option():
             return True
 
     return False
-
-
-# TODO: I submitted a patch to make setup_hook accept multiple arguments (see
-# http://bugs.python.org/issue12240).  If this patch is accepted, then it will
-# eliminate the necessity for this hook.
-def chain_setup_hooks(config):
-    """
-    A meta-setup_hook, if you will, that allows running multiple setup_hooks in
-    a predefined order specified in the 'setup_hooks' (not to be confused with
-    'setup_hook') option in the [global] section of setup.cfg.
-    """
-
-    if 'setup_hooks' in config['global']:
-        hooks = config['global']['setup_hooks']
-        hooks = filter(None, [h.strip() for h in hooks.split('\n')])
-        for hook in hooks:
-            if hook == 'stsci.distutils.hooks.chain_setup_hook':
-                # Because that would be silly...
-                continue
-            hook = resolve_name(hook)
-            hook(config)
 
 
 def use_packages_root(config):

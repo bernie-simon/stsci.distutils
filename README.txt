@@ -21,17 +21,6 @@ Currently the main features of this package are a couple of setup_hook scripts.
 In distutils2, a setup_hook is a script that runs at the beginning of any
 pysetup command, and can modify the package configuration read from setup.cfg.
 
-stsci.distutils.hooks.chain_setup_hooks
-'''''''''''''''''''''''''''''''''''''''''
-This hook allows multiple setup_hooks to run.  Normally, the setup_hook option
-in setup.cfg only allows one setup_hook to be specified.  Using this hook
-allows a `setup_hooks` option to be added to the `[global]` section of
-setup.cfg.  The hooks listed in `setup_hooks` are the executed in order as
-though they were combined into a single setup_hook.
-
-NOTE: I've added a patch to packaging that would allow the setup_hook option
-to take multiple values.  If that patch is accepted, this hook can be removed.
-
 stsci.distutils.hooks.use_packages_root
 '''''''''''''''''''''''''''''''''''''''''
 If using the `packages_root` option under the `[files]` section of setup.cfg,
