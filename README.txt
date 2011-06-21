@@ -28,6 +28,12 @@ this hook will add that path to `sys.path` so that modules in your package can
 be imported and used in setup.  This can be used even if `packages_root` is not
 specified--in this case it adds `''` to `sys.path`.
 
+stsci.distutils.hooks.glob_data_files
+'''''''''''''''''''''''''''''''''''''''
+Allows filename wildcards as understood by `glob.glob()` to be used in the
+data_files option.  This hook must be used in order to have this functionality
+since it does not normally exist in distutils.
+
 stsci.distutils.hooks.numpy_extension_hook
 ''''''''''''''''''''''''''''''''''''''''''''
 This is a pre-command hook for the build_ext command.  To use it, add a

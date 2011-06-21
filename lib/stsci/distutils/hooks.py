@@ -1,4 +1,14 @@
+import glob
 import sys
+
+
+try:
+    from packaging.util import split_multiline
+except ImportError:
+    try:
+        from distutils2.util import split_multiline
+    except ImportError:
+        from d2to1.util import split_multiline
 
 
 def is_display_option():
@@ -27,6 +37,10 @@ def is_display_option():
     return False
 
 
+# TODO: With luck this can go away soon--packaging now supports adding the cwd
+# to sys.path for running setup_hooks.  But it also needs to support adding
+# packages_root.  Also, it currently does not support adding cwd/packages_root
+# to sys.path for pre/post-command hooks, so that needs to be fixed.
 def use_packages_root(config):
     """
     Adds the path specified by the 'packages_root' option, or the current path
@@ -45,6 +59,30 @@ def use_packages_root(config):
             sys.path.insert(1, root)
         else:
             sys.path.insert(0, root)
+
+
+def glob_data_files(config):
+    """
+    Allows wildcard patterns to be used in the data_files option.
+    """
+
+    if 'files' in config and 'data_files' in config['files']:
+        data_files = config['files']['data_files']
+    else:
+        return
+
+    # The unfortunate thing about setup_hooks is that it doesn't split lines or
+    # do any processing on the config values before running the hooks, so the
+    # hook has to duplicate any effort in processing values that it works on
+    # TODO: Suggest a fix to this...?
+    data_files = split_multiline(data_files)
+    for idx, val in enumerate(data_files):
+        dest, filenames = (item.strip() for item in val.split('=', 1))
+        filenames = sum((glob.glob(item.strip())
+                        for item in filenames.split()), [])
+        data_files[idx] = '%s = %s' % (dest, ' '.join(filenames))
+
+    config['files']['data_files'] = '\n'.join(data_files)
 
 
 def numpy_extension_hook(command_obj):
