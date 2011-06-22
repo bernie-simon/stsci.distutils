@@ -60,6 +60,11 @@ def use_packages_root(config):
         else:
             sys.path.insert(0, root)
 
+    # Reload the stsci namespace package in case any new paths can be added to
+    # it from the new sys.path entry
+    if 'stsci' in sys.modules:
+        reload(sys.modules['stsci'])
+
 
 def glob_data_files(config):
     """
