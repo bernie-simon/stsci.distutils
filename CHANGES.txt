@@ -1,0 +1,14 @@
+Changelog
+===========
+
+0.2.1 (unreleased)
+--------------------
+
+* Fixed the dependencies so that setuptools is requirement but 'distribute'
+  specifically.  Previously installation could fail if users had plain
+  setuptools installed and not distribute
+
+0.2 (2011-08-23)
+------------------
+
+* Initial public release

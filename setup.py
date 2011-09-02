@@ -19,8 +19,10 @@ from pkg_resources import working_set, get_distribution, Requirement
 # This issue was fixed in distribute 0.6.17, but leaving in support for older
 # versions for now.
 requirement = Requirement.parse('distribute<0.6.19')
-dist = get_distribution('setuptools')
-has_issue205 = dist.project_name == 'distribute' and dist in requirement
+try:
+    has_issue205 = get_distribution('distribute') in requirement
+except:
+    has_issue205 = False
 
 if has_issue205:
     save_entries = working_set.entries[:]
