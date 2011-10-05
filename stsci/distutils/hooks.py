@@ -103,10 +103,10 @@ def glob_data_files(config):
 
 
 def svn_info_pre_hook(command_obj):
-    """This command hook creates an svninfo.py file in each package that
+    """This command hook creates an version.py file in each package that
     requires SVN info.  This is by determining if the package's __init__ tries
     to set either __svn_version__ or __full_svn_info__.  That is, it contains
-    an import of or from the svninfo module.  svninfo.py will not be created
+    an import of or from the svninfo module.  version.py will not be created
     in packages that don't use it.  It should really only be used in the main
     package of the project.
     """
@@ -119,7 +119,7 @@ def svn_info_pre_hook(command_obj):
 
 
 def svn_info_post_hook(command_obj):
-    """Cleans up a previously generated svninfo.py in order to avoid
+    """Cleans up a previously generated version.py in order to avoid
     clutter.
 
     Only removes the file if we're in an SVN working copy and the file is not

@@ -59,7 +59,7 @@ def get_svn_info(path='.'):
     return '\n'.join(lines)
 
 
-def write_svn_info(path='.', filename='svninfo.py'):
+def write_svn_info(path='.', filename='version.py'):
     rev = get_svn_rev(path)
 
     # if we are unable to determine the revision, we default to leaving the
@@ -81,8 +81,8 @@ def write_svn_info(path='.', filename='svninfo.py'):
         f.write('__full_svn_info__ = """\n%s\n"""\n\n' % info)
 
 
-def set_setup_date(filename='svninfo.py'):
-    """Update the svninfo.py with the last time a setup command was run."""
+def set_setup_date(filename='version.py'):
+    """Update the version.py with the last time a setup command was run."""
 
     if not os.path.exists(filename):
         return
@@ -102,7 +102,7 @@ def set_setup_date(filename='svninfo.py'):
 
 
 def write_svn_info_for_package(package_root, package):
-    """Conditionally creates an svninfo.py module in package if there are are
+    """Conditionally creates an version.py module in package if there are are
     any imports from svninfo in that package's __init__.py.  See also
     stsci.distutils.hooks.svn_info_pre_hook where this is used.
     """
@@ -139,19 +139,19 @@ def write_svn_info_for_package(package_root, package):
     if not found:
         return
 
-    # Write the svninfo.py file, or just touch it if it already exists
-    svninfo = os.path.join(pdir, 'svninfo.py')
+    # Write the version.py file, or just touch it if it already exists
+    svninfo = os.path.join(pdir, 'version.py')
     write_svn_info(filename=svninfo)
     set_setup_date(svninfo)
 
 
 def clean_svn_info_for_package(package_root, package):
-    """Removes the generated svninfo.py module from a package, but only if
+    """Removes the generated version.py module from a package, but only if
     we're in an SVN working copy.
     """
 
     pdir = os.path.join(package_root, *(package.split('.')))
-    svninfo = os.path.join(pdir, 'svninfo.py')
+    svninfo = os.path.join(pdir, 'version.py')
     if not os.path.exists(svninfo):
         return
 
