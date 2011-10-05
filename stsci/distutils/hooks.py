@@ -19,8 +19,9 @@ except NameError:
     from imp import reload
 
 
-from stsci.distutils.svnutils import (write_svn_info_for_package,
-                                      clean_svn_info_for_package)
+from stsci.distutils.svnutils import write_svn_info
+from stsci.distutils.versionutils import (package_uses_version_py,
+                                          clean_version_py, set_setup_datetime)
 
 
 def is_display_option():
@@ -102,23 +103,66 @@ def glob_data_files(config):
     config['files']['data_files'] = '\n'.join(data_files)
 
 
-def svn_info_pre_hook(command_obj):
+def version_hook(package_dir, packages, version):
     """This command hook creates an version.py file in each package that
-    requires SVN info.  This is by determining if the package's __init__ tries
-    to set either __svn_version__ or __full_svn_info__.  That is, it contains
-    an import of or from the svninfo module.  version.py will not be created
-    in packages that don't use it.  It should really only be used in the main
-    package of the project.
+    requires it.  This is by determining if the package's __init__ tries
+    to import or import from the version module.
+
+    version.py will not be created in packages that don't use it.  It should
+    only be used by the top-level package of the project.
+
+    Don't use this function directly--instead use version_setup_hook() or
+    version_pre_command_hook() which know how to retrieve the required metadata
+    depending on the context they are run in.
     """
+
+    # Strip any revision info from version; that will be handled separately
+    if '-' in version:
+        version = version.split('-', 1)[0]
+
+    for package in packages:
+        version_py = package_uses_version_py(package_dir, package)
+        if not version_py:
+            continue
+        with open(version_py, 'w') as f:
+            f.write('__version__ = %r\n' % version)
+        write_svn_info(filename=version_py, append=True)
+        set_setup_datetime(filename=version_py)
+
+
+def version_setup_hook(config):
+    if is_display_option():
+        return
+
+    version = config['metadata'].get('version', '0.0.0')
+    package_dir = config.get('files', {}).get('packages_root', '')
+    packages = config.get('files', {}).get('packages', '')
+
+    packages = split_multiline(packages)
+
+    version_hook(package_dir, packages, version)
+
+
+def version_pre_command_hook(command_obj):
+    """This command hook creates an version.py file in each package that
+    requires it.  This is by determining if the package's __init__ tries
+    to import or import from the version module.
+
+    version.py will not be created in packages that don't use it.  It should
+    only be used by the top-level package of the project.
+    """
+
+    if is_display_option():
+        return
 
     package_dir = command_obj.distribution.package_dir.get('', '.')
     packages = command_obj.distribution.packages
+    version = command_obj.distribution.metadata.version
 
-    for package in packages:
-        write_svn_info_for_package(package_dir, package)
+    version_hook(package_dir, packages, version)
 
 
-def svn_info_post_hook(command_obj):
+def version_post_command_hook(command_obj):
     """Cleans up a previously generated version.py in order to avoid
     clutter.
 
@@ -130,7 +174,7 @@ def svn_info_post_hook(command_obj):
     packages = command_obj.distribution.packages
 
     for package in packages:
-        clean_svn_info_for_package(package_dir, package)
+        clean_version_py(package_dir, package)
 
 
 def numpy_extension_hook(command_obj):
