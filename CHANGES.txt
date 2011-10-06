@@ -1,10 +1,26 @@
 Changelog
 ===========
 
-0.2.2 (unreleased)
+0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+* The `svn_info_pre_hook` and `svn_info_post_hook` have been replaced with
+  `version_pre_command_hook` and `version_post_command_hook` respectively.
+  However, a new `version_setup_hook`, which has the same purpose, has been
+  added.  It is generally easier to use and will give more consistent results
+  in that it will run every time setup.py is run, regardless of which command
+  is used.  `stsci.distutils` itself uses this hook--see the `setup.cfg` file
+  and `stsci/distutils/__init__.py` for example usage.
+
+* Instead of creating an `svninfo.py` module, the new `version_` hooks create a
+  file called `version.py`.  In addition to the SVN info that was included in
+  `svninfo.py`, it includes a `__version__` variable to be used by the
+  package's `__init__.py`.  This allows there to be a hard-coded `__version__`
+  variable included in the source code, rather than using pkg_resources to get
+  the version.
+
+* In `version.py`, the variables previously named `__svn_version__` and
+  `__full_svn_info__` are now named `__svn_revision__` and `__svn_full_info__`.
 
 
 0.2.1 (2011-09-02)

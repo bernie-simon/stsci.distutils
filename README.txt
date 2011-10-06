@@ -1,5 +1,5 @@
 Introduction
-==============
+============
 This package contains utilities used to package some of STScI's Python
 projects; specifically those projects that comprise stsci_python_ and
 Astrolib_.
@@ -13,49 +13,61 @@ looking at for examples of how to do certain things with your own packages, but
 YMMV.
 
 Features
-==========
+========
 
 Hook Scripts
---------------
+------------
 Currently the main features of this package are a couple of setup_hook scripts.
 In distutils2, a setup_hook is a script that runs at the beginning of any
 pysetup command, and can modify the package configuration read from setup.cfg.
 
 stsci.distutils.hooks.use_packages_root
-'''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''
 If using the `packages_root` option under the `[files]` section of setup.cfg,
 this hook will add that path to `sys.path` so that modules in your package can
 be imported and used in setup.  This can be used even if `packages_root` is not
 specified--in this case it adds `''` to `sys.path`.
 
 stsci.distutils.hooks.glob_data_files
-'''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''
 Allows filename wildcards as understood by `glob.glob()` to be used in the
 data_files option.  This hook must be used in order to have this functionality
 since it does not normally exist in distutils.
 
-stsci.distutils.hooks.svn_info_pre_hook
-'''''''''''''''''''''''''''''''''''''''''
-This hook is best used as a pre-hook for the build_py and sdist commands.  It
-creates a Python module called svninfo.py which contains three variables:
-`__svn_version__` (the SVN revision info as returned by the `svnversion`
-command), `__full_svn_info__` (as returned by the `svn info` command), and
-`__setup_datetime__` (the date and time that setup.py was last run).  These
-variables can be imported in the `__init__.py` package for degugging purposes.
-The svninfo.py module will *only* be created in a package that imports from
-svninfo in its `__init__.py`.
+stsci.distutils.hooks.version_setup_hook
+''''''''''''''''''''''''''''''''''''''''
+Creates a Python module called version.py which currently contains four
+variables:
 
-stsci.distutils.hooks.svn_info_post_hook
-''''''''''''''''''''''''''''''''''''''''''
-The complement to svn_info_pre_hook.  This will delete any svninfo.py files
-created during a build in order to prevent them from cluttering an SVN working
-copy (note, however, that svninfo.py is *not* deleted from the build/
+* `__version__` (the release version)
+* `__svn_revision__` (the SVN revision info as returned by the `svnversion`
+  command)
+* `__svn_full_info__` (as returned by the `svn info` command)
+* `__setup_datetime__` (the date and time that setup.py was last run).
+
+These variables can be imported in the package's `__init__.py` for degugging
+purposes.  The version.py module will *only* be created in a package that
+imports from the version module in its `__init__.py`.  It should be noted that
+this is generally preferable to writing these variables directly into
+`__init__.py`, since this provides more control and is less likely to
+unexpectedly break things in `__init__.py`.
+
+stsci.distutils.hooks.version_pre_command_hook
+''''''''''''''''''''''''''''''''''''''''''''''
+Identical to version_setup_hook, but designed to be used as a pre-command
+hook.
+
+stsci.distutils.hooks.version_post_command_hook
+'''''''''''''''''''''''''''''''''''''''''''''''
+The complement to version_pre_command_hook.  This will delete any version.py
+files created during a build in order to prevent them from cluttering an SVN
+working copy (note, however, that version.py is *not* deleted from the build/
 directory, so a copy of it is still preserved).  It will also not be deleted
 if the current directory is not an SVN working copy.  For example, if source
 code extracted from a source tarball it will be preserved.
 
 stsci.distutils.hooks.numpy_extension_hook
-''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''
 This is a pre-command hook for the build_ext command.  To use it, add a
 [build_ext] section to your setup.cfg, and add to it:
 
@@ -68,7 +80,7 @@ extension module that requires numpy to build.  The value 'numpy' will be
 replaced with the actual path to the numpy includes.
 
 stsci.distutils.hooks.is_display_option
-'''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''
 This is not actually a hook, but is a useful utility function that can be used
 in writing other hooks.  Basically, it returns `True` if setup.py was run with
 a "display option" such as --version or --help.  This can be used to prevent
@@ -76,7 +88,7 @@ your hook from running in such cases.
 
 
 Commands
-----------
+--------
 Currently one custom command is included:
 `stsci.distutils.command.easier_install`.  This is meant as a replacement for
 the distribute/setuptools easy_install command.  It works exactly the same way,
