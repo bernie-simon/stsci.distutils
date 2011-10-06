@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+import datetime
 import glob
 import sys
 
@@ -19,9 +20,11 @@ except NameError:
     from imp import reload
 
 
-from stsci.distutils.svnutils import write_svn_info
+from stsci.distutils.svnutils import get_svn_rev, get_svn_info
 from stsci.distutils.versionutils import (package_uses_version_py,
-                                          clean_version_py, set_setup_datetime)
+                                          clean_version_py,
+                                          update_setup_datetime,
+                                          VERSION_PY_TEMPLATE)
 
 
 def is_display_option():
@@ -103,7 +106,7 @@ def glob_data_files(config):
     config['files']['data_files'] = '\n'.join(data_files)
 
 
-def version_hook(package_dir, packages, version):
+def version_hook(function_name, package_dir, packages, name, version):
     """This command hook creates an version.py file in each package that
     requires it.  This is by determining if the package's __init__ tries
     to import or import from the version module.
@@ -124,23 +127,45 @@ def version_hook(package_dir, packages, version):
         version_py = package_uses_version_py(package_dir, package)
         if not version_py:
             continue
+
+        rev = get_svn_rev()
+        if rev in ('exported', 'unknown', None) and os.path.exists(version_py):
+            # If were unable to determine an SVN revision and the version.py
+            # already exists, just update the __setup_datetime__ and leave the
+            # rest of the file untouched
+            update_setup_datetime(version_py)
+            return
+        elif rev is None:
+            rev = 'Unable to determine SVN revision'
+
+        svn_info = get_svn_info()
+
+        template_variables = {
+                'hook_function': function_name,
+                'name': name,
+                'version': version,
+                'svn_revision': rev,
+                'svn_full_info': svn_info,
+                'setup_datetime': datetime.datetime.now()
+        }
+
         with open(version_py, 'w') as f:
-            f.write('__version__ = %r\n' % version)
-        write_svn_info(filename=version_py, append=True)
-        set_setup_datetime(filename=version_py)
+            f.write(VERSION_PY_TEMPLATE % template_variables)
 
 
 def version_setup_hook(config):
     if is_display_option():
         return
 
+    name = config['metadata'].get('name')
     version = config['metadata'].get('version', '0.0.0')
     package_dir = config.get('files', {}).get('packages_root', '')
     packages = config.get('files', {}).get('packages', '')
 
     packages = split_multiline(packages)
 
-    version_hook(package_dir, packages, version)
+    version_hook(__name__ + '.version_setup_hook', package_dir, packages,
+                 name, version)
 
 
 def version_pre_command_hook(command_obj):
@@ -157,9 +182,11 @@ def version_pre_command_hook(command_obj):
 
     package_dir = command_obj.distribution.package_dir.get('', '.')
     packages = command_obj.distribution.packages
+    name = command_obj.distribution.metadata.name
     version = command_obj.distribution.metadata.version
 
-    version_hook(package_dir, packages, version)
+    version_hook(__name__ + '.version_pre_command_hook',package_dir, packages,
+                 name, version)
 
 
 def version_post_command_hook(command_obj):

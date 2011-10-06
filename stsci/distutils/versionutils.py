@@ -5,11 +5,77 @@ info to version.py modules.
 """
 
 
+from __future__ import with_statement
+
 import datetime
 import os
 import subprocess
 
 from stsci.distutils.astutils import ImportVisitor, walk
+
+
+VERSION_PY_TEMPLATE = """
+\"\"\"This is an automatically generated file created by %(hook_function)s.  Do
+not modify this file by hand.
+\"\"\"
+
+
+import datetime
+
+try:
+    import pkg_resources
+except ImportError:
+    pkg_resources = None
+
+
+__version__ = %(version)r
+__svn_revision__ = %(svn_revision)r
+__svn_full_info__ = %(svn_full_info)r
+__setup_datetime__ = %(setup_datetime)r
+
+
+# Update the SVN info if installed in develop mode
+if pkg_resources:
+    dist = pkg_resources.get_distribution(%(name)r)
+    if dist.precedence == pkg_resources.DEVELOP_DIST:
+        import os
+        import subprocess
+
+        # Wind up the module path until we find the root of the project
+        # containing setup.py
+        path = os.path.abspath(os.path.dirname(__file__))
+        while path and not os.path.exists(os.path.join(path, 'setup.py')):
+            path = os.path.dirname(path)
+        if path:
+            try:
+                pipe = subprocess.Popen(['svnversion', path],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+                if pipe.wait() == 0:
+                    stdout = pipe.stdout.read().decode('ascii').strip()
+                    __svn_revision__ = stdout
+            except OSError:
+                __svn_revision__ = ''
+
+            try:
+                pipe = subprocess.Popen(['svn', 'info', path],
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+                if pipe.wait() == 0:
+                    lines = []
+                    for line in pipe.stdout.readlines():
+                        line = line.decode('ascii').strip()
+                        if not line:
+                            continue
+                        lines.append(line)
+
+                    if not lines:
+                        __svn_full_info__ = 'unknown'
+                    else:
+                        __svn_full_info__ = '\\n'.join(lines)
+            except OSError:
+                __svn_full_info__ = 'unknown'
+"""
 
 
 def package_uses_version_py(package_root, package, module_name='version'):
@@ -84,7 +150,7 @@ def clean_version_py(package_dir, package):
     os.remove(version_py)
 
 
-def set_setup_datetime(filename='version.py'):
+def update_setup_datetime(filename='version.py'):
     """Update the version.py with the last time a setup command was run."""
 
     if not os.path.exists(filename):
@@ -98,7 +164,7 @@ def set_setup_datetime(filename='version.py'):
 
     with open(filename, 'w') as f:
         for line in lines:
-            if not line.endswith('# setupdatetime\n'):
+            if not line.startswith('__setup_datetime__'):
                 f.write(line)
-        f.write('import datetime # setupdatetime\n')
-        f.write('__setup_datetime__ = %r # setupdatetime\n' % d)
+            else:
+                f.write('__setup_datetime__ = %r\n' % d)

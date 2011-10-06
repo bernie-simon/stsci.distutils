@@ -56,25 +56,3 @@ def get_svn_info(path='.'):
         return 'unknown'
 
     return '\n'.join(lines)
-
-
-def write_svn_info(path='.', filename='version.py', append=False):
-    rev = get_svn_rev(path)
-
-    # if we are unable to determine the revision, we default to leaving the
-    # existing revision file unchanged.  Otherwise, we fill it in with whatever
-    # we have
-
-    if rev is None:
-        if os.path.exists(filename):
-            return
-        rev = 'Unable to determine SVN revision'
-    else:
-        if rev in ('exported', 'unknown') and os.path.exists(filename):
-            return
-
-    info = get_svn_info(path)
-
-    with open(filename, 'a' if append else 'w') as f:
-        f.write('__svn_revision__ = %r\n' % rev)
-        f.write('__svn_full_info__ = """\n%s\n"""\n\n' % info)
