@@ -15,8 +15,8 @@ from stsci.distutils.astutils import ImportVisitor, walk
 
 
 VERSION_PY_TEMPLATE = """
-\"\"\"This is an automatically generated file created by %(hook_function)s.  Do
-not modify this file by hand.
+\"\"\"This is an automatically generated file created by %(hook_function)s.
+Do not modify this file by hand.
 \"\"\"
 
 
@@ -80,7 +80,7 @@ def update_svn_info():
 
 update_svn_info()
 del update_svn_info
-"""
+"""[1:]
 
 
 def package_uses_version_py(package_root, package, module_name='version'):
