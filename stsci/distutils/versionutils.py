@@ -22,11 +22,6 @@ not modify this file by hand.
 
 import datetime
 
-try:
-    import pkg_resources
-except ImportError:
-    pkg_resources = None
-
 
 __version__ = %(version)r
 __svn_revision__ = %(svn_revision)r
@@ -34,47 +29,57 @@ __svn_full_info__ = %(svn_full_info)r
 __setup_datetime__ = %(setup_datetime)r
 
 
-# Update the SVN info if installed in develop mode
-if pkg_resources:
-    dist = pkg_resources.get_distribution(%(name)r)
-    if dist.precedence == pkg_resources.DEVELOP_DIST:
-        import os
-        import subprocess
+def update_svn_info():
+    \"\"\"Update the SVN info if running out of an SVN working copy.\"\"\"
 
-        # Wind up the module path until we find the root of the project
-        # containing setup.py
-        path = os.path.abspath(os.path.dirname(__file__))
-        while path and not os.path.exists(os.path.join(path, 'setup.py')):
-            path = os.path.dirname(path)
-        if path:
-            try:
-                pipe = subprocess.Popen(['svnversion', path],
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                if pipe.wait() == 0:
-                    stdout = pipe.stdout.read().decode('ascii').strip()
-                    __svn_revision__ = stdout
-            except OSError:
-                __svn_revision__ = ''
+    import os
+    import subprocess
 
-            try:
-                pipe = subprocess.Popen(['svn', 'info', path],
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                if pipe.wait() == 0:
-                    lines = []
-                    for line in pipe.stdout.readlines():
-                        line = line.decode('ascii').strip()
-                        if not line:
-                            continue
-                        lines.append(line)
+    global __svn_revision__
+    global __svn_full_info__
 
-                    if not lines:
-                        __svn_full_info__ = 'unknown'
-                    else:
-                        __svn_full_info__ = '\\n'.join(lines)
-            except OSError:
+    # Wind up the module path until we find the root of the project
+    # containing setup.py
+    path = os.path.abspath(os.path.dirname(__file__))
+    dirname = os.path.dirname(path)
+    setup_py = os.path.join(path, 'setup.py')
+    while path != dirname and not os.path.exists(setup_py):
+        path = os.path.dirname(path)
+        dirname = os.path.dirname(path)
+        setup_py = os.path.join(path, 'setup.py')
+
+    try:
+        pipe = subprocess.Popen(['svnversion', path],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        if pipe.wait() == 0:
+            stdout = pipe.stdout.read().decode('ascii').strip()
+            __svn_revision__ = stdout
+    except OSError:
+        pass
+
+    try:
+        pipe = subprocess.Popen(['svn', 'info', path],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        if pipe.wait() == 0:
+            lines = []
+            for line in pipe.stdout.readlines():
+                line = line.decode('ascii').strip()
+                if not line:
+                    continue
+                lines.append(line)
+
+            if not lines:
                 __svn_full_info__ = 'unknown'
+            else:
+                __svn_full_info__ = '\\n'.join(lines)
+    except OSError:
+        pass
+
+
+update_svn_info()
+del update_svn_info
 """
 
 
