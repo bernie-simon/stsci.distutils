@@ -5,6 +5,8 @@ import glob
 import os
 import sys
 
+from distutils import log
+
 
 try:
     from packaging.util import split_multiline
@@ -81,30 +83,6 @@ def use_packages_root(config):
     # it from the new sys.path entry
     if 'stsci' in sys.modules:
         reload(sys.modules['stsci'])
-
-
-def glob_data_files(config):
-    """
-    Allows wildcard patterns to be used in the data_files option.
-    """
-
-    if 'files' in config and 'data_files' in config['files']:
-        data_files = config['files']['data_files']
-    else:
-        return
-
-    # The unfortunate thing about setup_hooks is that it doesn't split lines or
-    # do any processing on the config values before running the hooks, so the
-    # hook has to duplicate any effort in processing values that it works on
-    # TODO: Suggest a fix to this...?
-    data_files = split_multiline(data_files)
-    for idx, val in enumerate(data_files):
-        dest, filenames = (item.strip() for item in val.split('=', 1))
-        filenames = sum((glob.glob(item.strip())
-                        for item in filenames.split()), [])
-        data_files[idx] = '%s = %s' % (dest, ' '.join(filenames))
-
-    config['files']['data_files'] = '\n'.join(data_files)
 
 
 def version_hook(function_name, package_dir, packages, name, version):
@@ -218,6 +196,10 @@ def numpy_extension_hook(command_obj):
     as a dependency.
     """
 
+    if command_obj.command_name != 'build_ext':
+        log.warn('%s is meant to be used with the build_ext command only; '
+                 'it is not for use with the %s command.' %
+                 (__name__, command_obj.command_name))
     try:
         import numpy
     except ImportError:
@@ -237,3 +219,37 @@ def numpy_extension_hook(command_obj):
         for inc in includes:
             extension.include_dirs.insert(idx, inc)
         extension.include_dirs.remove('numpy')
+
+
+def glob_data_files(command_obj):
+    """A pre-command hook for the install_data command allowing wildcard
+    patterns to be used in the data_files option.
+
+    Also ensures that data files with relative paths as their targets are
+    installed relative install_lib.
+    """
+
+    if command_obj.command_name != 'install_data':
+        log.warn('%s is meant to be used with the install_data command only; '
+                 'it is not for use with the %s command.' %
+                 (__name__, command_obj.command_name))
+
+    data_files = command_obj.data_files
+
+    for idx, val in enumerate(data_files[:]):
+        if isinstance(val, basestring):
+            # Support the rare, deprecated case where just a filename is given
+            filenames = glob.glob(val)
+            del data_files[idx]
+            data_files.extend(filenames)
+            continue
+
+        dest, filenames = val
+        filenames = sum((glob.glob(item) for item in filenames), [])
+        data_files[idx] = (dest, filenames)
+
+    # Ensure the correct install dir; this is the default behavior for
+    # installing with distribute, but when using
+    # --single-version-externally-managed we need to to tweak this
+    install_lib_cmd = command_obj.get_finalized_command('install_lib')
+    command_obj.install_dir = install_lib_cmd.install_dir

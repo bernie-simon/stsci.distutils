@@ -20,6 +20,8 @@ Hook Scripts
 Currently the main features of this package are a couple of setup_hook scripts.
 In distutils2, a setup_hook is a script that runs at the beginning of any
 pysetup command, and can modify the package configuration read from setup.cfg.
+There are also pre- and post-command hooks that only run before/after a
+specific setup command (eg. build_ext, install) is run.
 
 stsci.distutils.hooks.use_packages_root
 '''''''''''''''''''''''''''''''''''''''
@@ -27,12 +29,6 @@ If using the `packages_root` option under the `[files]` section of setup.cfg,
 this hook will add that path to `sys.path` so that modules in your package can
 be imported and used in setup.  This can be used even if `packages_root` is not
 specified--in this case it adds `''` to `sys.path`.
-
-stsci.distutils.hooks.glob_data_files
-'''''''''''''''''''''''''''''''''''''
-Allows filename wildcards as understood by `glob.glob()` to be used in the
-data_files option.  This hook must be used in order to have this functionality
-since it does not normally exist in distutils.
 
 stsci.distutils.hooks.version_setup_hook
 ''''''''''''''''''''''''''''''''''''''''
@@ -85,6 +81,17 @@ This is not actually a hook, but is a useful utility function that can be used
 in writing other hooks.  Basically, it returns `True` if setup.py was run with
 a "display option" such as --version or --help.  This can be used to prevent
 your hook from running in such cases.
+
+stsci.distutils.hooks.glob_data_files
+'''''''''''''''''''''''''''''''''''''
+A pre-command hook for the install_data command.  Allows filename wildcards as
+understood by `glob.glob()` to be used in the data_files option.  This hook
+must be used in order to have this functionality since it does not normally
+exist in distutils.
+
+This hook also ensures that data files are installed relative to the package
+path.  data_files shouldn't normally be installed this way, but the
+functionality is required for a few special cases.
 
 
 Commands

@@ -4,6 +4,11 @@ Changelog
 0.3 (unreleased)
 ------------------
 
+* The glob_data_files hook became a pre-command hook for the install_data
+  command instead of being a setup-hook.  This is to support the additional
+  functionality of requiring data_files with relative destination paths to be
+  install relative to the package's install path (i.e. site-packages).
+
 * The `svn_info_pre_hook` and `svn_info_post_hook` have been replaced with
   `version_pre_command_hook` and `version_post_command_hook` respectively.
   However, a new `version_setup_hook`, which has the same purpose, has been

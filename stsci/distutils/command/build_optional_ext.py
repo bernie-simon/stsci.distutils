@@ -5,6 +5,7 @@ from distutils.util import strtobool
 
 from ConfigParser import ConfigParser
 
+
 class build_optional_ext(build_ext):
     """This is a version of the build_ext command that allows specific
     extensions to be marked as 'optional'.  If an optional extension fails to
