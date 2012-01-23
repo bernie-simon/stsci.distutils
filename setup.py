@@ -7,7 +7,17 @@ except ImportError:
     use_setuptools()
     from setuptools import setup
 
+import sys
+
 from pkg_resources import working_set, get_distribution, Requirement
+
+
+# If stsci.distutils is being used to install another package in the stsci
+# namespace package, we may need to first re-import the stsci package so that
+# all the entries (including the current path) are added to stsci.__path__
+# Deleting 'stsci' from sys.modules will force such a re-import.
+if 'stsci' in sys.modules:
+    del sys.modules['stsci']
 
 
 # This is a workaround for http://bugs.python.org/setuptools/issue20; most
