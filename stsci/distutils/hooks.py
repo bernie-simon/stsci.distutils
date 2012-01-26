@@ -31,11 +31,15 @@ from stsci.distutils.versionutils import (package_uses_version_py,
                                           VERSION_PY_TEMPLATE)
 
 
-def is_display_option():
+def is_display_option(ignore=None):
     """A hack to test if one of the arguments passed to setup.py is a display
     argument that should just display a value and exit.  If so, don't bother
     running this hook (this capability really ought to be included with
     distutils2).
+
+    Optionally, ignore may contain a list of display options to ignore in this
+    check.  Each option in the ignore list must contain the correct number of
+    dashes.
     """
 
     from setuptools.dist import Distribution
@@ -51,7 +55,7 @@ def is_display_option():
         display_opts.append('--' + opt[0])
 
     for arg in sys.argv:
-        if arg in display_opts:
+        if arg in display_opts and arg not in ignore:
             return True
 
     return False
@@ -113,12 +117,35 @@ def tag_svn_revision(config):
         if not version.endswith('.dev'):
             return
 
-        rev = get_svn_version()
+        # First try to get the revision by checking for it in an existing
+        # .version module
+        package_dir = config.get('files', {}).get('packages_root', '')
+        packages = config.get('files', {}).get('packages', '')
+        packages = split_multiline(packages)
+        rev = None
+        for package in packages:
+            version_py = package_uses_version_py(package_dir, package)
+            if not version_py:
+                continue
+            try:
+                mod = __import__(package + '.version',
+                                 fromlist='__svn_revision__')
+            except ImportError:
+                mod = None
+            if mod is not None and hasattr(mod, '__svn_revision__'):
+                rev = mod.__svn_revision__
+                break
+
+        if rev is None:
+            # A .version module didn't exist or was incomplete; try calling
+            # svnversion directly
+            rev = get_svn_version()
+
         if not rev:
             return
         if ':' in rev:
             rev, _ = rev.split(':', 1)
-        while rev[-1] not in string.digits:
+        while rev and rev[-1] not in string.digits:
             rev = rev[:-1]
         try:
             rev = int(rev)
@@ -151,7 +178,8 @@ def version_hook(function_name, package_dir, packages, name, version):
             continue
 
         rev = get_svn_version()
-        if rev in ('exported', 'unknown', None) and os.path.exists(version_py):
+        if (not rev or rev[0] not in string.digits and
+            os.path.exists(version_py)):
             # If were unable to determine an SVN revision and the version.py
             # already exists, just update the __setup_datetime__ and leave the
             # rest of the file untouched
@@ -176,7 +204,7 @@ def version_hook(function_name, package_dir, packages, name, version):
 
 
 def version_setup_hook(config):
-    if is_display_option():
+    if is_display_option(ignore=['--version']):
         return
 
     name = config['metadata'].get('name')
@@ -239,10 +267,11 @@ def numpy_extension_hook(command_obj):
     as a dependency.
     """
 
-    if command_obj.command_name != 'build_ext':
+    command_name = command_obj.get_command_name()
+    if command_name != 'build_ext':
         log.warn('%s is meant to be used with the build_ext command only; '
                  'it is not for use with the %s command.' %
-                 (__name__, command_obj.command_name))
+                 (__name__, command_name))
     try:
         import numpy
     except ImportError:
@@ -272,10 +301,11 @@ def glob_data_files(command_obj):
     installed relative install_lib.
     """
 
-    if command_obj.command_name != 'install_data':
+    command_name = command_obj.get_command_name()
+    if command_name != 'install_data':
         log.warn('%s is meant to be used with the install_data command only; '
                  'it is not for use with the %s command.' %
-                 (__name__, command_obj.command_name))
+                 (__name__, command_name))
 
     data_files = command_obj.data_files
 
