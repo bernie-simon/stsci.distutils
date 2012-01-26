@@ -9,7 +9,7 @@ import subprocess
 from stsci.distutils.astutils import ImportVisitor, walk
 
 
-def get_svn_rev(path='.'):
+def get_svn_version(path='.'):
     """Uses `svnversion` to get just the latest revision at the given path."""
 
     try:

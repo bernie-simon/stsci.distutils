@@ -3,6 +3,7 @@ from __future__ import with_statement
 import datetime
 import glob
 import os
+import string
 import sys
 
 from distutils import log
@@ -23,7 +24,7 @@ except NameError:
     from imp import reload
 
 
-from stsci.distutils.svnutils import get_svn_rev, get_svn_info
+from stsci.distutils.svnutils import get_svn_info, get_svn_version
 from stsci.distutils.versionutils import (package_uses_version_py,
                                           clean_version_py,
                                           update_setup_datetime,
@@ -85,6 +86,48 @@ def use_packages_root(config):
         reload(sys.modules['stsci'])
 
 
+def tag_svn_revision(config):
+    """
+    A setup_hook to add the SVN revision of the current working copy path to
+    the package version string, but only if the version ends in .dev.
+
+    For example, ``mypackage-1.0.dev`` becomes ``mypackage-1.0.dev1234``.  This
+    is in accordance with the version string format standardized by PEP 386.
+
+    This should be used as a replacement for the ``tag_svn_revision`` option to
+    the egg_info command.  This hook is more compatible with
+    packaging/distutils2, which does not include any VCS support.  This hook is
+    also more flexible in that it turns the revision number on/off depending on
+    the presence of ``.dev`` in the version string, so that it's not
+    automatically added to the version in final releases.
+
+    This hook does require the ``svnversion`` command to be available in order
+    to work.  It does not examine the working copy metadata directly.
+    """
+
+    if 'metadata' in config and 'version' in config['metadata']:
+        metadata = config['metadata']
+        version = metadata['version']
+
+        # Don't add an svn revision unless the version ends with .dev
+        if not version.endswith('.dev'):
+            return
+
+        rev = get_svn_version()
+        if not rev:
+            return
+        if ':' in rev:
+            rev, _ = rev.split(':', 1)
+        while rev[-1] not in string.digits:
+            rev = rev[:-1]
+        try:
+            rev = int(rev)
+        except (ValueError, TypeError):
+            return
+
+        metadata['version'] ='%s%d' % (version, rev)
+
+
 def version_hook(function_name, package_dir, packages, name, version):
     """This command hook creates an version.py file in each package that
     requires it.  This is by determining if the package's __init__ tries
@@ -107,7 +150,7 @@ def version_hook(function_name, package_dir, packages, name, version):
         if not version_py:
             continue
 
-        rev = get_svn_rev()
+        rev = get_svn_version()
         if rev in ('exported', 'unknown', None) and os.path.exists(version_py):
             # If were unable to determine an SVN revision and the version.py
             # already exists, just update the __setup_datetime__ and leave the

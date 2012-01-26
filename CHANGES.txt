@@ -16,6 +16,12 @@ Changelog
 - Added support for the ``build_optional_ext`` command, which replaces/extends
   the default ``build_ext`` command.  See the README for more details.
 
+- Added the ``tag_svn_revision`` setup_hook as a replacement for the
+  setuptools-specific tag_svn_revision option to the egg_info command.  This
+  new hook is easier to use than the old tag_svn_revision option: It's
+  automatically enabled by the presence of ``.dev`` in the version string, and
+  disabled otherwise.
+
 - The ``svn_info_pre_hook`` and ``svn_info_post_hook`` have been replaced with
   ``version_pre_command_hook`` and ``version_post_command_hook`` respectively.
   However, a new ``version_setup_hook``, which has the same purpose, has been

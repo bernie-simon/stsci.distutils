@@ -63,6 +63,24 @@ directory, so a copy of it is still preserved).  It will also not be deleted
 if the current directory is not an SVN working copy.  For example, if source
 code extracted from a source tarball it will be preserved.
 
+stsci.distutils.hooks.tag_svn_revision
+''''''''''''''''''''''''''''''''''''''
+A setup_hook to add the SVN revision of the current working copy path to the
+package version string, but only if the version ends in .dev.
+
+For example, ``mypackage-1.0.dev`` becomes ``mypackage-1.0.dev1234``.  This is
+in accordance with the version string format standardized by PEP 386.
+
+This should be used as a replacement for the ``tag_svn_revision`` option to
+the egg_info command.  This hook is more compatible with packaging/distutils2,
+which does not include any VCS support.  This hook is also more flexible in
+that it turns the revision number on/off depending on the presence of ``.dev``
+in the version string, so that it's not automatically added to the version in
+final releases.
+
+This hook does require the ``svnversion`` command to be available in order to
+work.  It does not examine the working copy metadata directly.
+
 stsci.distutils.hooks.numpy_extension_hook
 ''''''''''''''''''''''''''''''''''''''''''
 This is a pre-command hook for the build_ext command.  To use it, add a
