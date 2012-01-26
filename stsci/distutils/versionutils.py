@@ -33,6 +33,7 @@ def update_svn_info():
     \"\"\"Update the SVN info if running out of an SVN working copy.\"\"\"
 
     import os
+    import string
     import subprocess
 
     global __svn_revision__
@@ -54,7 +55,8 @@ def update_svn_info():
                                 stderr=subprocess.PIPE)
         if pipe.wait() == 0:
             stdout = pipe.stdout.read().decode('ascii').strip()
-            __svn_revision__ = stdout
+            if stdout and stdout[0] in string.digits:
+                __svn_revision__ = stdout
     except OSError:
         pass
 
