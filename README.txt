@@ -25,21 +25,22 @@ specific setup command (eg. build_ext, install) is run.
 
 stsci.distutils.hooks.use_packages_root
 '''''''''''''''''''''''''''''''''''''''
-If using the `packages_root` option under the `[files]` section of setup.cfg,
-this hook will add that path to `sys.path` so that modules in your package can
-be imported and used in setup.  This can be used even if `packages_root` is not
-specified--in this case it adds `''` to `sys.path`.
+If using the ``packages_root`` option under the ``[files]`` section of
+setup.cfg, this hook will add that path to ``sys.path`` so that modules in your
+package can be imported and used in setup.  This can be used even if
+``packages_root`` is not specified--in this case it adds ``''`` to
+``sys.path``.
 
 stsci.distutils.hooks.version_setup_hook
 ''''''''''''''''''''''''''''''''''''''''
 Creates a Python module called version.py which currently contains four
 variables:
 
-* `__version__` (the release version)
-* `__svn_revision__` (the SVN revision info as returned by the `svnversion`
+* ``__version__`` (the release version)
+* ``__svn_revision__`` (the SVN revision info as returned by the ``svnversion``
   command)
-* `__svn_full_info__` (as returned by the `svn info` command)
-* `__setup_datetime__` (the date and time that setup.py was last run).
+* ``__svn_full_info__`` (as returned by the ``svn info`` command)
+* ``__setup_datetime__`` (the date and time that setup.py was last run).
 
 These variables can be imported in the package's `__init__.py` for degugging
 purposes.  The version.py module will *only* be created in a package that
@@ -65,7 +66,7 @@ code extracted from a source tarball it will be preserved.
 stsci.distutils.hooks.numpy_extension_hook
 ''''''''''''''''''''''''''''''''''''''''''
 This is a pre-command hook for the build_ext command.  To use it, add a
-[build_ext] section to your setup.cfg, and add to it:
+``[build_ext]`` section to your setup.cfg, and add to it::
 
     pre-hook.numpy-extension-hook = stsci.distutils.hooks.numpy_extension_hook
 
@@ -78,14 +79,14 @@ replaced with the actual path to the numpy includes.
 stsci.distutils.hooks.is_display_option
 '''''''''''''''''''''''''''''''''''''''
 This is not actually a hook, but is a useful utility function that can be used
-in writing other hooks.  Basically, it returns `True` if setup.py was run with
-a "display option" such as --version or --help.  This can be used to prevent
-your hook from running in such cases.
+in writing other hooks.  Basically, it returns ``True`` if setup.py was run
+with a "display option" such as --version or --help.  This can be used to
+prevent your hook from running in such cases.
 
 stsci.distutils.hooks.glob_data_files
 '''''''''''''''''''''''''''''''''''''
 A pre-command hook for the install_data command.  Allows filename wildcards as
-understood by `glob.glob()` to be used in the data_files option.  This hook
+understood by ``glob.glob()`` to be used in the data_files option.  This hook
 must be used in order to have this functionality since it does not normally
 exist in distutils.
 
@@ -96,23 +97,33 @@ functionality is required for a few special cases.
 
 Commands
 --------
-Currently one custom command is included:
-`stsci.distutils.command.easier_install`.  This is meant as a replacement for
-the distribute/setuptools easy_install command.  It works exactly the same way,
-but includes a new feature: Local source directories can be searched for
-package dependencies.
+build_optional_ext
+''''''''''''''''''
+This serves as an optional replacement for the default built_ext command,
+which compiles C extension modules.  Its purpose is to allow extension modules
+to be *optional*, so that if their build fails the rest of the package is
+still allowed to be built and installed.  This can be used when an extension
+module is not definitely required to use the package.
 
-The directories to search can be specified by adding them to the `find-links`
-option in the `[easy_intall]` section of setup.cfg.  Though `find-links` can
-already be used to point to egg files or source tarfiles on the local
-filesystem, this adds the ability to point to existing source checkouts to
-search for dependencies.
+To use this custom command, add::
 
-Currently this only supports source distributions that have their package
-metadata in setup.cfg (distutils2 style), but this could be extended to support
-other more common distribution styles.  For example, checking for EGG-INFO, or
-even calling `setup.py egg_info` and using that to determine whether or not a
-source checkout matches some requirement.
+    commands = stsci.distutils.command.build_optional_ext.build_optional_ext
+
+under the ``[global]`` section of your package's setup.cfg.  Then, to mark
+an individual extension module as optional, under the setup.cfg section for
+that extension add::
+
+    optional = True
+
+Optionally, you may also add a custom failure message by adding::
+
+    fail_message = The foobar extension module failed to compile: %(message)s.
+                   This could be because you lack such and such headers.
+                   This package will still work, but such and such features
+                   will be disabled.
+
+Note that if the string ``%(message)s`` is present in the ``fail_message``, it
+will be replaced with whatever error caused the build to fail.
 
 
 .. _stsci_python: http://www.stsci.edu/resources/software_hardware/pyraf/stsci_python
