@@ -190,12 +190,14 @@ def version_hook(function_name, package_dir, packages, name, version):
 
         svn_info = get_svn_info()
 
+        # Wrap version, rev, and svn_info in str() to ensure that Python 2
+        # unicode literals aren't written, which will break things in Python 3
         template_variables = {
                 'hook_function': function_name,
                 'name': name,
-                'version': version,
-                'svn_revision': rev,
-                'svn_full_info': svn_info,
+                'version': str(version),
+                'svn_revision': str(rev),
+                'svn_full_info': str(svn_info),
                 'setup_datetime': datetime.datetime.now()
         }
 
