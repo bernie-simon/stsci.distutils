@@ -24,11 +24,9 @@ except NameError:
     from imp import reload
 
 
-from stsci.distutils.svnutils import get_svn_info, get_svn_version
-from stsci.distutils.versionutils import (package_uses_version_py,
-                                          clean_version_py,
-                                          update_setup_datetime,
-                                          VERSION_PY_TEMPLATE)
+from .svnutils import get_svn_info, get_svn_version
+from .versionutils import (package_uses_version_py, clean_version_py,
+                           update_setup_datetime, VERSION_PY_TEMPLATE)
 
 
 def is_display_option(ignore=None):

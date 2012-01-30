@@ -6,7 +6,7 @@ from __future__ import with_statement
 import os
 import subprocess
 
-from stsci.distutils.astutils import ImportVisitor, walk
+from .astutils import ImportVisitor, walk
 
 
 def get_svn_version(path='.'):

@@ -11,7 +11,7 @@ import datetime
 import os
 import subprocess
 
-from stsci.distutils.astutils import ImportVisitor, walk
+from .astutils import ImportVisitor, walk
 
 
 VERSION_PY_TEMPLATE = """
