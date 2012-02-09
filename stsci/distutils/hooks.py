@@ -324,5 +324,7 @@ def glob_data_files(command_obj):
     # Ensure the correct install dir; this is the default behavior for
     # installing with distribute, but when using
     # --single-version-externally-managed we need to to tweak this
-    install_lib_cmd = command_obj.get_finalized_command('install_lib')
-    command_obj.install_dir = install_lib_cmd.install_dir
+    install_cmd = command_obj.get_finalized_command('install')
+    if command_obj.install_dir == install_cmd.install_data:
+        install_lib_cmd = command_obj.get_finalized_command('install_lib')
+        command_obj.install_dir = install_lib_cmd.install_dir

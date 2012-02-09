@@ -1,10 +1,13 @@
+import glob
 import os
 import shlex
 import shutil
+import tarfile
 
 from ConfigParser import ConfigParser
 from datetime import datetime
 from distutils.ccompiler import new_compiler, customize_compiler
+from setuptools import Distribution
 
 from . import StsciDistutilsTestCase, TESTPACKAGE_REV
 from .util import reload
@@ -144,3 +147,80 @@ class TestHooks(StsciDistutilsTestCase):
                 continue
             for path in [numpy.get_include(), numpy.get_numarray_include()]:
                 assert '-I' + path not in args
+
+    def test_glob_data_files(self):
+        """
+        Test the glob_data_files hook by ensuring that all the correct data
+        files are included in the source distribution, and that they are
+        installed to the correct location in the package.
+        """
+
+        data_files = os.path.join('stsci', 'testpackage', 'data_files')
+
+        # First test the source distribution
+        self.run_setup('sdist')
+
+        # There can be only one
+        tf = tarfile.open(glob.glob(os.path.join('dist', '*.tar.gz'))[0])
+
+        # Tarfiles created by sdist kindly place all contents in a top-level
+        # directory with the same name as the file minus extension, so as to
+        # kindly not bomb you when you extract it.  But we don't care about
+        # that top level directory
+        names = [os.sep.join(p.split(os.sep)[1:]) for p in tf.getnames()]
+
+        # Sdists should place the data_files at the root, just like in the
+        # normal source layout; even files that aren't normally installed
+        # should be included
+        for filename in ['a.txt', 'b.txt', 'c.rst']:
+            assert os.path.join('data_files', filename) in names
+
+        # Now we test that data_files go to the right place in various install
+        # schemes
+        def get_install_lib(args):
+            # This helper uses the distutils/setuptools machinery to determine
+            # where a command will install files based on the arguments passed
+            # to setup.py
+            dist = Distribution({'script_args': args})
+            dist.parse_command_line()
+            install_cmd = dist.get_command_obj('install')
+            install_cmd.ensure_finalized()
+            return install_cmd.install_lib
+
+        def test_install_scheme(args):
+            # This general code should work to test the files in a variety of
+            # install schemes depending on args
+            if os.path.exists('temp'):
+                shutil.rmtree('temp')
+            install_lib = get_install_lib(args)
+            os.makedirs(install_lib)
+            old_pythonpath = os.environ.get('PYTHONPATH')
+            # For a setuptools/easy_install-stype install to an alternate
+            # prefix we have to have the new install dir on the PYTHONPATH or
+            # easy_install will balk
+            os.environ['PYTHONPATH'] = (
+                install_lib + os.pathsep +
+                (old_pythonpath if old_pythonpath else ''))
+
+            try:
+                self.run_setup(*(args + ['--record=installed.txt']))
+            finally:
+                if old_pythonpath is not None:
+                    os.environ['PYTHONPATH'] = old_pythonpath
+
+            install_lib = os.path.abspath(install_lib)
+            with open('installed.txt') as f:
+                for line in f:
+                    if line.endswith('/a.txt'):
+                        assert line == os.path.join(install_lib, data_files,
+                                                    'a.txt')
+                    elif line.endswith('/b.txt'):
+                        assert line == os.path.join(install_lib, data_files,
+                                                    'b.txt')
+                    elif line.endswith('/c.rst'):
+                        assert line != os.path.join(install_lib, data_files,
+                                                'c.rst')
+
+        test_install_scheme(['install', '--prefix=temp'])
+        test_install_scheme(['install', '--root=temp'])
+        test_install_scheme(['install', '--install-lib=temp'])
