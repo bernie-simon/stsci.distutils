@@ -45,6 +45,8 @@ class StsciDistutilsTestCase(object):
         # We need to manually add the test package's path to the stsci
         # package's __path__ since it's already been imported.
         if 'stsci' in sys.modules:
+            # Clean the existing __path__ up
+            reload(sys.modules['stsci'])
             sys.modules['stsci'].__path__.insert(
                 0, os.path.join(self.package_dir, 'stsci'))
 
@@ -52,17 +54,30 @@ class StsciDistutilsTestCase(object):
         os.chdir(self.oldcwd)
         # Remove stsci.testpackage from sys.modules so that it can be freshly
         # re-imported by the next test
-        # if 'stsci.testpackage' in sys.modules:
-        #    del sys.modules['stsci.testpackage']
-
+        for k in list(sys.modules):
+            if k == 'stsci.testpackage' or k.startswith('stsci.testpackage.'):
+                del sys.modules[k]
         shutil.rmtree(self.temp_dir)
 
-    def run_setup(self, args):
-        # Most of the tests will start us out here, but just be sure...
-        os.chdir(self.package_dir)
-        p = subprocess.Popen([sys.executable, 'setup.py'] + args,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if p.wait() != 0:
-            raise Exception('setup.py %s failed:\n%s' %
-                            (' '.join(args), p.stderr.read().decode('ascii')))
+    def run_setup(self, *args):
+        return self._run_cmd(sys.executable, ('setup.py',) + args)
 
+    def run_svn(self, *args):
+        return self._run_cmd('svn', args)
+
+    def _run_cmd(self, cmd, args):
+        """
+        Runs a command, with the given argument list, in the root of the test
+        working copy--returns the stdout and stderr streams from the
+        subprocess.
+        """
+
+        os.chdir(self.package_dir)
+        p = subprocess.Popen([cmd] + list(args), stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        if p.wait() != 0:
+            raise Exception('%s %s failed:\n%s' %
+                            (cmd, ' '.join(args),
+                             p.stderr.read().decode('ascii')))
+
+        return (s.read().decode('ascii').strip() for s in [p.stdout, p.stderr])
