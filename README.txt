@@ -140,7 +140,7 @@ Optionally, you may also add a custom failure message by adding::
                    This package will still work, but such and such features
                    will be disabled.
 
-Note that if the string ``%(message)s`` is present in the ``fail_message``, it
+Note that if the string ``%message`` is present in the ``fail_message``, it
 will be replaced with whatever error caused the build to fail.
 
 

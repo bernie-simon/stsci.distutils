@@ -70,7 +70,7 @@ class build_optional_ext(build_ext):
             else:
                 # %(message)s will be replaced with the stringified exception
                 ext._fail_message = (
-                    'building optional extension "%s" failed: %%(message)s' %
+                    'building optional extension "%s" failed: %%message' %
                     name)
 
     def check_extensions_list(self, extensions):
@@ -87,4 +87,6 @@ class build_optional_ext(build_ext):
                 log.warn('building optional extension "%s" failed: %s' %
                          (ext.name, e))
             else:
-                log.warn(ext._fail_message % {'message': unicode(e)})
+                fail_message = ext._fail_message.replace('%message',
+                                                         '%(message)s')
+                log.warn(fail_message % {'message': unicode(e)})
