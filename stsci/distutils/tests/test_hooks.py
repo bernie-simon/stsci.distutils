@@ -1,32 +1,30 @@
+from __future__ import with_statement
+
+
 import glob
 import os
 import shlex
 import shutil
 import tarfile
 
-from ConfigParser import ConfigParser
 from datetime import datetime
-from distutils.ccompiler import new_compiler, customize_compiler
 from setuptools import Distribution
 
 from . import StsciDistutilsTestCase, TESTPACKAGE_REV
-from .util import reload
+from .util import reload, get_compiler_command, open_config
 
 
 VERSION = '0.1.dev' + TESTPACKAGE_REV
 
 
 class TestHooks(StsciDistutilsTestCase):
-    def setup(self):
-        super(TestHooks, self).setup()
-
     def test_setup_py_version(self):
         """
         Test that the `./setupy.py --version` command returns the correct
         value without balking.
         """
 
-        stdout, _ = self.run_setup('--version')
+        stdout, _, _ = self.run_setup('--version')
         assert stdout == VERSION
 
     def test_version_with_rev(self):
@@ -53,13 +51,10 @@ class TestHooks(StsciDistutilsTestCase):
         (i.e. not ending with '.dev'.
         """
 
-        cfg = ConfigParser()
-        cfg.read('setup.cfg')
-        cfg.set('metadata', 'version', '0.1')
-        with open('setup.cfg', 'w') as fp:
-            cfg.write(fp)
+        with open_config('setup.cfg') as cfg:
+            cfg.set('metadata', 'version', '0.1')
 
-        stdout, _ = self.run_setup('--version')
+        stdout, _, _ = self.run_setup('--version')
         assert stdout == '0.1'
 
     def test_inline_svn_update(self):
@@ -111,14 +106,12 @@ class TestHooks(StsciDistutilsTestCase):
     def test_numpy_extension_hook(self):
         """Test basic functionality of the Numpy extension hook."""
 
-        compiler = new_compiler()
-        customize_compiler(compiler)
-        compiler_exe = compiler.compiler[0]
+        compiler_cmd = get_compiler_command()
 
-        stdout, _ = self.run_setup('build')
+        stdout, _, _ = self.run_setup('build')
         for line in stdout.splitlines():
             args = shlex.split(line)
-            if args[0] != compiler_exe:
+            if args[0] != compiler_cmd:
                 continue
 
             # The first output from the compiler should be an attempt to
@@ -131,19 +124,16 @@ class TestHooks(StsciDistutilsTestCase):
 
         # And for the heck of it, let's ensure that this doesn't happen if
         # 'numpy' is not listed in include_dirs
-        cfg = ConfigParser()
-        cfg.read('setup.cfg')
-        cfg.remove_option('extension=stsci.testpackage.testext',
-                          'include_dirs')
-        with open('setup.cfg', 'w') as fp:
-            cfg.write(fp)
+        with open_config('setup.cfg') as cfg:
+            cfg.remove_option('extension=stsci.testpackage.testext',
+                              'include_dirs')
 
         shutil.rmtree('build')
 
-        stdout, _ = self.run_setup('build')
+        stdout, _, _ = self.run_setup('build')
         for line in stdout.splitlines():
             args = shlex.split(line)
-            if args[0] != compiler_exe:
+            if args[0] != compiler_cmd:
                 continue
             for path in [numpy.get_include(), numpy.get_numarray_include()]:
                 assert '-I' + path not in args

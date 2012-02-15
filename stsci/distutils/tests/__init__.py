@@ -68,16 +68,15 @@ class StsciDistutilsTestCase(object):
     def _run_cmd(self, cmd, args):
         """
         Runs a command, with the given argument list, in the root of the test
-        working copy--returns the stdout and stderr streams from the
-        subprocess.
+        working copy--returns the stdout and stderr streams and the exit code
+        from the subprocess.
         """
 
         os.chdir(self.package_dir)
         p = subprocess.Popen([cmd] + list(args), stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-        if p.wait() != 0:
-            raise Exception('%s %s failed:\n%s' %
-                            (cmd, ' '.join(args),
-                             p.stderr.read().decode('ascii')))
+        exit_code = p.wait()
+        streams = tuple(s.read().decode('latin1').strip()
+                        for s in [p.stdout, p.stderr])
 
-        return (s.read().decode('ascii').strip() for s in [p.stdout, p.stderr])
+        return (streams) + (exit_code,)
