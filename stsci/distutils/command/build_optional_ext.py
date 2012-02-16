@@ -67,11 +67,6 @@ class build_optional_ext(build_ext):
 
             if cfg.has_option(section, 'fail_message'):
                 ext._fail_message = cfg.get(section, 'fail_message')
-            else:
-                # %(message)s will be replaced with the stringified exception
-                ext._fail_message = (
-                    'building optional extension "%s" failed: %%message' %
-                    name)
 
     def check_extensions_list(self, extensions):
         build_ext.check_extensions_list(self, extensions)
@@ -83,10 +78,7 @@ class build_optional_ext(build_ext):
         except (CCompilerError, DistutilsError, CompileError), e:
             if not hasattr(ext, '_optional') or not ext._optional:
                 raise
-            if not hasattr(ext, '_fail_message'):
-                log.warn('building optional extension "%s" failed: %s' %
-                         (ext.name, e))
-            else:
-                fail_message = ext._fail_message.replace('%message',
-                                                         '%(message)s')
-                log.warn(fail_message % {'message': unicode(e)})
+            log.warn('building optional extension "%s" failed: %s' %
+                     (ext.name, e))
+            if hasattr(ext, '_fail_message'):
+                log.warn(ext._fail_message)

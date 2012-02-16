@@ -1,7 +1,7 @@
 from __future__ import with_statement
 
-
 import os
+import sys
 
 from . import StsciDistutilsTestCase
 from .util import get_compiler_command, open_config
@@ -28,20 +28,26 @@ class TestCommands(StsciDistutilsTestCase):
         # say "exit status 1" but that can't be guaranteed for all compilers
         msg = ('building optional extension "stsci.testpackage.testext" '
                'failed: command \'%s\' failed with exit status' % compiler_cmd)
-        _, stderr, exit_code = self.run_setup('build', '--force')
+        # Prior to Python 2.7, distutils.log output everything to stdout; now
+        # warnings and errors are output to stderr
+        if sys.version_info[:2] < (2, 7):
+            stderr, _, exit_code = self.run_setup('build', '--force')
+        else:
+            _, stderr, exit_code = self.run_setup('build', '--force')
         assert exit_code == 0
         assert stderr.splitlines()[-1].startswith(msg)
 
         # Test a custom fail message
         with open_config('setup.cfg') as cfg:
             cfg.set('extension=stsci.testpackage.testext', 'fail_message',
-                    'Custom fail message: %message')
+                    'Custom fail message.')
 
-        msg = ("Custom fail message: command '%s' failed with exit status" %
-               compiler_cmd)
-        _, stderr, exit_code = self.run_setup('build', '--force')
+        if sys.version_info[:2] < (2, 7):
+            stderr, _, exit_code = self.run_setup('build', '--force')
+        else:
+            _, stderr, exit_code = self.run_setup('build', '--force')
         assert exit_code == 0
-        assert stderr.splitlines()[-1].startswith(msg)
+        assert stderr.splitlines()[-1] == 'Custom fail message.'
 
         # Finally, make sure the extension is *not* treated as optional if not
         # marked as such in the config
@@ -49,6 +55,7 @@ class TestCommands(StsciDistutilsTestCase):
             cfg.remove_option('extension=stsci.testpackage.testext',
                               'optional')
 
+        # This error message comes out on stderr for all Python versions AFAICT
         msg = "error: command '%s' failed with exit status" % compiler_cmd
         _, stderr, exit_code = self.run_setup('build', '--force')
         assert exit_code != 0

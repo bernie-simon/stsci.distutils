@@ -6,6 +6,8 @@ import tempfile
 
 import nose
 
+from .util import reload
+
 
 TESTPACKAGE_URL = ('https://svn.stsci.edu/svn/ssb/stsci_python/'
                    'stsci.distutils/trunk/stsci/distutils/tests/testpackage')

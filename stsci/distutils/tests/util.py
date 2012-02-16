@@ -8,7 +8,8 @@ except NameError:
     from imp import reload
 
 from ConfigParser import ConfigParser
-from distutils.ccompiler import new_compiler, customize_compiler
+from distutils.ccompiler import new_compiler
+from distutils.sysconfig import customize_compiler
 
 
 @contextlib.contextmanager

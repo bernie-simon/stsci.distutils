@@ -3,12 +3,13 @@ from __future__ import with_statement
 
 import glob
 import os
-import shlex
 import shutil
 import tarfile
 
 from datetime import datetime
 from setuptools import Distribution
+
+import numpy
 
 from . import StsciDistutilsTestCase, TESTPACKAGE_REV
 from .util import reload, get_compiler_command, open_config
@@ -110,7 +111,10 @@ class TestHooks(StsciDistutilsTestCase):
 
         stdout, _, _ = self.run_setup('build')
         for line in stdout.splitlines():
-            args = shlex.split(line)
+            # Previously this used shlex.split(), but that's broken for unicode
+            # strings prior to Python 3.x, and it doesn't matter too much since
+            # we only care about the first argument
+            args = line.split()
             if args[0] != compiler_cmd:
                 continue
 
@@ -132,7 +136,7 @@ class TestHooks(StsciDistutilsTestCase):
 
         stdout, _, _ = self.run_setup('build')
         for line in stdout.splitlines():
-            args = shlex.split(line)
+            args = line.split()
             if args[0] != compiler_cmd:
                 continue
             for path in [numpy.get_include(), numpy.get_numarray_include()]:
