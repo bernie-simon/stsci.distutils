@@ -3,8 +3,9 @@ from __future__ import with_statement
 
 import glob
 import os
-import shutil
+import sys
 import tarfile
+import zipfile
 
 from datetime import datetime
 from setuptools import Distribution
@@ -12,7 +13,7 @@ from setuptools import Distribution
 import numpy
 
 from . import StsciDistutilsTestCase, TESTPACKAGE_REV
-from .util import reload, get_compiler_command, open_config
+from .util import reload, get_compiler_command, open_config, rmtree
 
 
 VERSION = '0.1.dev' + TESTPACKAGE_REV
@@ -43,8 +44,11 @@ class TestHooks(StsciDistutilsTestCase):
         assert hasattr(stsci.testpackage, '__svn_revision__')
         assert stsci.testpackage.__svn_revision__ == TESTPACKAGE_REV
 
-        assert os.path.exists(
-            os.path.join('dist', 'stsci.testpackage-%s.tar.gz' % VERSION))
+        filenames = [os.path.join('dist',
+                                  'stsci.testpackage-%s.%s' % (VERSION, ext))
+                     for ext in ('tar.gz', 'zip')]
+
+        assert os.path.exists(filenames[0]) or os.path.exists(filenames[1])
 
     def test_release_version(self):
         """
@@ -132,7 +136,7 @@ class TestHooks(StsciDistutilsTestCase):
             cfg.remove_option('extension=stsci.testpackage.testext',
                               'include_dirs')
 
-        shutil.rmtree('build')
+        rmtree('build')
 
         stdout, _, _ = self.run_setup('build')
         for line in stdout.splitlines():
@@ -155,19 +159,32 @@ class TestHooks(StsciDistutilsTestCase):
         self.run_setup('sdist')
 
         # There can be only one
-        tf = tarfile.open(glob.glob(os.path.join('dist', '*.tar.gz'))[0])
+        try:
+            tf = glob.glob(os.path.join('dist', '*.tar.gz'))[0]
+        except IndexError:
+            # No tar.gz files found?  On Windows sdist creates a .zip file, so
+            # let's look for that
+            tf = glob.glob(os.path.join('dist', '*.zip'))[0]
+            # If that failed then I don't know--I guess the test should fail
 
-        # Tarfiles created by sdist kindly place all contents in a top-level
-        # directory with the same name as the file minus extension, so as to
-        # kindly not bomb you when you extract it.  But we don't care about
-        # that top level directory
-        names = [os.sep.join(p.split(os.sep)[1:]) for p in tf.getnames()]
+        if tf.endswith('.tar.gz'):
+            tf = tarfile.open(tf)
+            # Tarfiles created by sdist kindly place all contents in a
+            # top-level directory with the same name as the file minus
+            # extension, so as to kindly not bomb you when you extract it.  But
+            # we don't care about that top level directory
+            names = ['/'.join(p.split('/')[1:]) for p in tf.getnames()]
+        else:
+            with zipfile.ZipFile(tf) as zf:
+                names = ['/'.join(p.split('/')[1:]) for p in zf.namelist()]
 
         # Sdists should place the data_files at the root, just like in the
         # normal source layout; even files that aren't normally installed
         # should be included
         for filename in ['a.txt', 'b.txt', 'c.rst']:
-            assert os.path.join('data_files', filename) in names
+            # Don't use os.path.join -- zipfile/tarfile always return paths
+            # with / as path sep
+            assert ('data_files/' + filename) in names
 
         # Now we test that data_files go to the right place in various install
         # schemes
@@ -185,7 +202,7 @@ class TestHooks(StsciDistutilsTestCase):
             # This general code should work to test the files in a variety of
             # install schemes depending on args
             if os.path.exists('temp'):
-                shutil.rmtree('temp')
+                rmtree('temp')
             install_lib = get_install_lib(args)
             os.makedirs(install_lib)
             old_pythonpath = os.environ.get('PYTHONPATH')
@@ -202,18 +219,14 @@ class TestHooks(StsciDistutilsTestCase):
                 if old_pythonpath is not None:
                     os.environ['PYTHONPATH'] = old_pythonpath
 
-            install_lib = os.path.abspath(install_lib)
+            found_files = 0
             with open('installed.txt') as f:
+                # installed.txt, however, contains OS-specific paths
                 for line in f:
-                    if line.endswith('/a.txt'):
-                        assert line == os.path.join(install_lib, data_files,
-                                                    'a.txt')
-                    elif line.endswith('/b.txt'):
-                        assert line == os.path.join(install_lib, data_files,
-                                                    'b.txt')
-                    elif line.endswith('/c.rst'):
-                        assert line != os.path.join(install_lib, data_files,
-                                                'c.rst')
+                    for name in ['a.txt', 'b.txt', 'c.rst']:
+                        if line.strip().endswith(os.sep + name):
+                            found_files += 1
+            assert found_files == 2
 
         test_install_scheme(['install', '--prefix=temp'])
         test_install_scheme(['install', '--root=temp'])

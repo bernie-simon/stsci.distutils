@@ -14,11 +14,11 @@ class TestCommands(StsciDistutilsTestCase):
         # smoothly
         compiler_cmd = get_compiler_command()
 
-        stdout, _, exit_code = self.run_setup('build')
+        _, _, exit_code = self.run_setup('build')
 
-        # The last line of output should be from a successful compiler command
+        # Make sure the build went successfully; a zero exit code should be
+        # good enough for our purposes
         assert exit_code == 0
-        assert stdout.splitlines()[-1].split()[0] == compiler_cmd
 
         # Now let's try breaking the build
         with open(os.path.join('src', 'testext.c'), 'a') as f:

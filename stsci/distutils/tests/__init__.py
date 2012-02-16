@@ -6,7 +6,7 @@ import tempfile
 
 import nose
 
-from .util import reload
+from .util import reload, rmtree
 
 
 TESTPACKAGE_URL = ('https://svn.stsci.edu/svn/ssb/stsci_python/'
@@ -35,7 +35,7 @@ class StsciDistutilsTestCase(object):
 
     @classmethod
     def teardown_class(cls):
-        shutil.rmtree(cls.wc_dir)
+        rmtree(cls.wc_dir)
 
     def setup(self):
         self.temp_dir = tempfile.mkdtemp(prefix='stsci-distutils-test-')
@@ -59,7 +59,7 @@ class StsciDistutilsTestCase(object):
         for k in list(sys.modules):
             if k == 'stsci.testpackage' or k.startswith('stsci.testpackage.'):
                 del sys.modules[k]
-        shutil.rmtree(self.temp_dir)
+        rmtree(self.temp_dir)
 
     def run_setup(self, *args):
         return self._run_cmd(sys.executable, ('setup.py',) + args)
@@ -77,8 +77,7 @@ class StsciDistutilsTestCase(object):
         os.chdir(self.package_dir)
         p = subprocess.Popen([cmd] + list(args), stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-        exit_code = p.wait()
-        streams = tuple(s.read().decode('latin1').strip()
-                        for s in [p.stdout, p.stderr])
 
-        return (streams) + (exit_code,)
+        streams = tuple(s.decode('latin1').strip() for s in p.communicate())
+
+        return (streams) + (p.returncode,)
