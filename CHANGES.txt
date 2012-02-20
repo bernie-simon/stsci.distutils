@@ -57,6 +57,9 @@ Changelog
   delete ``stsci`` from ``sys.modules``, which forces it to be reimported, now
   the its ``__path__`` extended to include ``stsci.distutil``'s path.
 
+- Added zest.releaser hooks for tweaking the development version string
+  template, and for uploading new releases to STScI's local package index.
+
 
 0.2.2 (2011-11-09)
 ------------------
