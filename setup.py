@@ -85,11 +85,11 @@ try:
         use_2to3=True,
         zip_safe=False,
         entry_points={
-            'zest.releaser.middle': [
+            'zest.releaser.releaser.middle': [
                 'fix_dev_version_template = '
                 'stsci.distutils.release:fix_dev_version_template'
             ],
-            'zest.releaser.after': [
+            'zest.releaser.releaser.after': [
                 'add_to_stsci_package_index = '
                 'stsci.distutils.release:add_to_stsci_package_index'
             ]

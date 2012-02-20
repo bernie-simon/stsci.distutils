@@ -1,13 +1,7 @@
 Changelog
 ===========
 
-0.3.1 (unreleased)
-------------------
-
-- Nothing changed yet.
-
-
-0.3 (2012-02-20)
+0.3 (unreleased)
 ----------------
 
 - The ``glob_data_files`` hook became a pre-command hook for the install_data
