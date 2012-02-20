@@ -135,13 +135,10 @@ that extension add::
 
 Optionally, you may also add a custom failure message by adding::
 
-    fail_message = The foobar extension module failed to compile: %(message)s.
+    fail_message = The foobar extension module failed to compile.
                    This could be because you lack such and such headers.
                    This package will still work, but such and such features
                    will be disabled.
-
-Note that if the string ``%message`` is present in the ``fail_message``, it
-will be replaced with whatever error caused the build to fail.
 
 
 .. _stsci_python: http://www.stsci.edu/resources/software_hardware/pyraf/stsci_python
