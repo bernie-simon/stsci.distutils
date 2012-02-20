@@ -84,6 +84,16 @@ try:
         d2to1=True,
         use_2to3=True,
         zip_safe=False,
+        entry_points={
+            'zest.releaser.middle': [
+                'fix_dev_version_template = '
+                'stsci.distutils.release:fix_dev_version_template'
+            ],
+            'zest.releaser.after': [
+                'add_to_stsci_package_index = '
+                'stsci.distutils.release:add_to_stsci_package_index'
+            ]
+        }
     )
 finally:
     if has_issue205:
