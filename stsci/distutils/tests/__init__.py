@@ -31,7 +31,7 @@ class StsciDistutilsTestCase(object):
         if p.wait() != 0:
             raise nose.SkipTest('svn failed to check out the test package: '
                                 '%s; tests will not be able to run' %
-                                p.stderr.read().decode('ascii'))
+                                p.stderr.read().decode('latin1'))
 
     @classmethod
     def teardown_class(cls):

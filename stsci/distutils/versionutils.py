@@ -54,7 +54,7 @@ def update_svn_info():
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         if pipe.wait() == 0:
-            stdout = pipe.stdout.read().decode('ascii').strip()
+            stdout = pipe.stdout.read().decode('latin1').strip()
             if stdout and stdout[0] in string.digits:
                 __svn_revision__ = stdout
     except OSError:
@@ -67,7 +67,7 @@ def update_svn_info():
         if pipe.wait() == 0:
             lines = []
             for line in pipe.stdout.readlines():
-                line = line.decode('ascii').strip()
+                line = line.decode('latin1').strip()
                 if not line:
                     continue
                 lines.append(line)
@@ -151,7 +151,7 @@ def clean_version_py(package_dir, package):
 
     # TODO: Maybe don't assume ASCII here.  Find out the best way to handle
     # this.
-    if not pipe.stdout.read().decode('ascii').startswith('?'):
+    if not pipe.stdout.read().decode('latin1').startswith('?'):
         return
 
     os.remove(version_py)

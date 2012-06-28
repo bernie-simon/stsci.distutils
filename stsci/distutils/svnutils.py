@@ -21,7 +21,7 @@ def get_svn_version(path='.'):
     if pipe.wait() != 0:
         return None
 
-    return pipe.stdout.read().decode('ascii').strip()
+    return pipe.stdout.read().decode('latin1').strip()
 
 
 def get_svn_info(path='.'):
@@ -45,7 +45,7 @@ def get_svn_info(path='.'):
 
     lines = []
     for line in pipe.stdout.readlines():
-        line = line.decode('ascii').strip()
+        line = line.decode('latin1').strip()
         if not line:
             continue
         if line.startswith('Path:'):
