@@ -11,7 +11,7 @@ from .util import reload, rmtree
 
 TESTPACKAGE_URL = ('https://svn.stsci.edu/svn/ssb/stsci_python/'
                    'stsci.distutils/trunk/stsci/distutils/tests/testpackage')
-TESTPACKAGE_REV = '14811'  # The last known 'good' revision of this package
+TESTPACKAGE_REV = '17597'  # The last known 'good' revision of this package
 
 
 class StsciDistutilsTestCase(object):
