@@ -1,7 +1,7 @@
 Changelog
 ===========
 
-0.3.1 (unreleased)
+0.3.1 (2012-06-28)
 ------------------
 
 - Fixed a bug where console output from svn-related programs was assumed to be
