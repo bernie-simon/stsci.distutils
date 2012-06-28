@@ -85,11 +85,14 @@ try:
         use_2to3=True,
         zip_safe=False,
         entry_points={
+            'zest.releaser.releaser.before': [
+                'fix_sdist_format = stsci.distutils.release:fix_sdist_format'
+            ],
             'zest.releaser.releaser.after': [
                 'add_to_stsci_package_index = '
                 'stsci.distutils.release:add_to_stsci_package_index'
             ],
-            'zest.releaser.postreleaser.middle': [
+            'zest.releaser.postreleaser.before': [
                 'fix_dev_version_template = '
                 'stsci.distutils.release:fix_dev_version_template'
             ]

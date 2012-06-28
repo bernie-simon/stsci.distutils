@@ -54,6 +54,25 @@ def fix_dev_version_template(data):
     data['dev_version_template'] = '%(new_version)s.dev'
 
 
+def fix_sdist_format(data):
+    """
+    Recent versions of zest.releaser have an annoyance that it creates .zip
+    sdists instead of .tar.gz.  This is supposedly to work around a bug in
+    Python 2.4 with .tar.gz sdists, but none of our software supports Python
+    2.4 anyways.
+
+    Unfortunately the only way to disable this behavior, for now, is with
+    monkey-patching zest.releaser.
+    """
+
+    from zest.releaser.release import Releaser
+
+    def _my_sdist_options(self):
+        return ''
+
+    Releaser._sdist_options = _my_sdist_options
+
+
 def add_to_stsci_package_index(data):
     """
     A releaser.after hook to copy the source distribution to STScI's local
