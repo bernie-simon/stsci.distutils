@@ -26,6 +26,7 @@ class TestHooks(StsciDistutilsTestCase):
         value without balking.
         """
 
+        self.run_setup('egg_info')
         stdout, _, _ = self.run_setup('--version')
         assert stdout == VERSION
 
@@ -59,6 +60,7 @@ class TestHooks(StsciDistutilsTestCase):
         with open_config('setup.cfg') as cfg:
             cfg.set('metadata', 'version', '0.1')
 
+        self.run_setup('egg_info')
         stdout, _, _ = self.run_setup('--version')
         assert stdout == '0.1'
 
@@ -119,6 +121,8 @@ class TestHooks(StsciDistutilsTestCase):
             # strings prior to Python 3.x, and it doesn't matter too much since
             # we only care about the first argument
             args = line.split()
+            if not args:
+                continue
             if args[0] != compiler_cmd:
                 continue
 
@@ -141,6 +145,8 @@ class TestHooks(StsciDistutilsTestCase):
         stdout, _, _ = self.run_setup('build')
         for line in stdout.splitlines():
             args = line.split()
+            if not args:
+                continue
             if args[0] != compiler_cmd:
                 continue
             for path in [numpy.get_include(), numpy.get_numarray_include()]:
