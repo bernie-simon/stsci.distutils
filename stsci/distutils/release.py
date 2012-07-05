@@ -65,6 +65,9 @@ def fix_sdist_format(data):
     monkey-patching zest.releaser.
     """
 
+    if not is_stsci_project(data['workingdir']):
+        return
+
     from zest.releaser.release import Releaser
 
     def _my_sdist_options(self):

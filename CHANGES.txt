@@ -4,7 +4,12 @@ Changelog
 0.3.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Version 0.3.1 added a new zest.releaser hooks to ensure that source
+  distributes are created as tar.gz files instead of zip files--this was left
+  out of the changelog for 0.3.1.
+
+- The tar.gz zest.releaser hook is updated in 0.3.2 to only run on stsci
+  packages.
 
 
 0.3.1 (2012-06-28)
