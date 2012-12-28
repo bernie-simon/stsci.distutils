@@ -69,6 +69,15 @@ def use_packages_root(config):
     if 'packages_root' is not specified, to sys.path.  This is particularly
     useful, for example, to run setup_hooks or add custom commands that are in
     your package's source tree.
+
+    Config Usage: ::
+
+        [files]
+        packages_root = lib
+
+        [global]
+        setup_hooks = stsci.distutils.hooks.use_packages_root
+
     """
 
     if 'files' in config and 'packages_root' in config['files']:
@@ -105,6 +114,13 @@ def tag_svn_revision(config):
 
     This hook does require the ``svnversion`` command to be available in order
     to work.  It does not examine the working copy metadata directly.
+
+    Config Usage: ::
+
+        [global]
+        setup_hooks = stsci.distutils.hooks.tag_svn_revision
+
+
     """
 
     if 'metadata' in config and 'version' in config['metadata']:
@@ -164,6 +180,11 @@ def version_hook(function_name, package_dir, packages, name, version):
     Don't use this function directly--instead use version_setup_hook() or
     version_pre_command_hook() which know how to retrieve the required metadata
     depending on the context they are run in.
+
+    Config Usage: ::
+
+        Not called directly from the config file.  See version_setup_hook
+
     """
 
     # Strip any revision info from version; that will be handled separately
@@ -204,6 +225,28 @@ def version_hook(function_name, package_dir, packages, name, version):
 
 
 def version_setup_hook(config):
+    """Creates a Python module called version.py which currently contains four
+    variables:
+    
+    * ``__version__`` (the release version)
+    * ``__svn_revision__`` (the SVN revision info as returned by the ``svnversion``
+      command)
+    * ``__svn_full_info__`` (as returned by the ``svn info`` command)
+    * ``__setup_datetime__`` (the date and time that setup.py was last run).
+    
+    These variables can be imported in the package's `__init__.py` for degugging
+    purposes.  The version.py module will *only* be created in a package that
+    imports from the version module in its `__init__.py`.  It should be noted that
+    this is generally preferable to writing these variables directly into
+    `__init__.py`, since this provides more control and is less likely to
+    unexpectedly break things in `__init__.py`.
+
+    Config Usage: ::
+
+        [global]
+        setup-hooks = stsci.distutils.hooks.version_setup_hook
+
+    """
     if is_display_option(ignore=['--version']):
         return
 
@@ -225,6 +268,11 @@ def version_pre_command_hook(command_obj):
 
     version.py will not be created in packages that don't use it.  It should
     only be used by the top-level package of the project.
+
+    Config Usage: ::
+
+        TODO: not used ?
+
     """
 
     if is_display_option():
@@ -245,6 +293,11 @@ def version_post_command_hook(command_obj):
 
     Only removes the file if we're in an SVN working copy and the file is not
     already under version control.
+
+    Config Usage: ::
+
+        TODO: not used?
+
     """
 
     package_dir = command_obj.distribution.package_dir.get('', '.')
@@ -265,6 +318,10 @@ def numpy_extension_hook(command_obj):
     Note: Although this function uses numpy, stsci.distutils does not depend on
     numpy.  It is up to the distribution that uses this hook to require numpy
     as a dependency.
+
+    Config Usage: ::
+
+        TODO
     """
 
     command_name = command_obj.get_command_name()
@@ -299,6 +356,18 @@ def glob_data_files(command_obj):
 
     Also ensures that data files with relative paths as their targets are
     installed relative install_lib.
+
+    Config Usage: ::
+
+        [files]
+        data_files = 
+            target_directory = source_directory/*.foo
+            other_target_directory = other_source_directory/*
+
+        [install_data]
+        pre-hook.glob-data-files = stsci.distutils.hooks.glob_data_files
+
+
     """
 
     command_name = command_obj.get_command_name()
