@@ -197,8 +197,7 @@ def version_hook(function_name, package_dir, packages, name, version):
             continue
 
         rev = get_svn_version()
-        if (not rev or rev[0] not in string.digits and
-            os.path.exists(version_py)):
+        if (not rev or not rev[0] in string.digits) and os.path.exists(version_py):
             # If were unable to determine an SVN revision and the version.py
             # already exists, just update the __setup_datetime__ and leave the
             # rest of the file untouched
