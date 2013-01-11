@@ -122,7 +122,6 @@ def tag_svn_revision(config):
 
     Config Usage: ::
 
-        ; You do not need this if you use version_setup_hook.
         [global]
         setup_hooks = stsci.distutils.hooks.tag_svn_revision
 
