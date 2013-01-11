@@ -70,10 +70,14 @@ def use_packages_root(config):
     useful, for example, to run setup_hooks or add custom commands that are in
     your package's source tree.
 
+    Use this when the root of your package source tree is not in
+    the same directory with the setup.py
+
     Config Usage: ::
 
         [files]
         packages_root = lib
+        ; for installing pkgname from lib/pkgname/*.py
 
         [global]
         setup_hooks = stsci.distutils.hooks.use_packages_root
@@ -115,11 +119,16 @@ def tag_svn_revision(config):
     This hook does require the ``svnversion`` command to be available in order
     to work.  It does not examine the working copy metadata directly.
 
+
     Config Usage: ::
 
+        ; You do not need this if you use version_setup_hook.
         [global]
         setup_hooks = stsci.distutils.hooks.tag_svn_revision
 
+    You should write exactly this in your package's __init__.py:
+
+        from .version import *
 
     """
 
@@ -244,6 +253,10 @@ def version_setup_hook(config):
 
         [global]
         setup-hooks = stsci.distutils.hooks.version_setup_hook
+
+    You should write exactly this in your package's __init__.py:
+
+        from .version import *
 
     """
     if is_display_option(ignore=['--version']):
