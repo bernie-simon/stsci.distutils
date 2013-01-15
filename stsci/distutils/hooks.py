@@ -19,10 +19,11 @@ except ImportError:
 
 
 try:
+    # python 2
     reload
 except NameError:
+    # python 3
     from imp import reload
-
 
 from .svnutils import get_svn_info, get_svn_version
 from .versionutils import (package_uses_version_py, clean_version_py,
@@ -98,7 +99,12 @@ def use_packages_root(config):
     # Reload the stsci namespace package in case any new paths can be added to
     # it from the new sys.path entry
     if 'stsci' in sys.modules:
-        reload(sys.modules['stsci'])
+        try :
+            reload(sys.modules['stsci'])
+        except ImportError :
+            print "IMPORT ERROR FROM RELOAD???"
+            import time
+            time.sleep(2)
 
 
 def tag_svn_revision(config):
