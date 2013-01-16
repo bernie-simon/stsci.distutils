@@ -19,7 +19,8 @@ VERSION_PY_TEMPLATE = """
 Do not modify this file by hand.
 \"\"\"
 
-__all__ = [ '__version__', '__svn_revision__', '__svn_full_info__', '__setup_datetime__' ]
+__all__ = ['__version__', '__svn_revision__', '__svn_full_info__',
+           '__setup_datetime__']
 
 import datetime
 
@@ -109,7 +110,7 @@ def package_uses_version_py(package_root, package, module_name='version'):
         visitor = ImportVisitor()
         walk(init, visitor)
     except Exception as e :
-        raise Exception('Not able to parse %s'%init)
+        raise Exception('Not able to parse %s' % init)
 
     found = False
     # Check the import statements parsed from the file for an import of or
