@@ -91,10 +91,10 @@ def package_uses_version_py(package_root, package, module_name='version'):
     package.  Returns the full path to the version.py module, regardless of
     whether it already exists.  Otherwise returns False.
 
-    This works by checking whether or not there are any imports from 'version'
-    in the package's __init__.py.
+    This works by checking whether or not there are any imports from the
+    'version' module in the package's ``__init__.py``.
 
-    You should write this in your package's __init__.py:
+    You should write this in your package's ``__init__.py``::
 
         from .version import *
 

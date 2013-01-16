@@ -42,12 +42,12 @@ variables:
 * ``__svn_full_info__`` (as returned by the ``svn info`` command)
 * ``__setup_datetime__`` (the date and time that setup.py was last run).
 
-These variables can be imported in the package's `__init__.py` for degugging
+These variables can be imported in the package's ``__init__.py`` for degugging
 purposes.  The version.py module will *only* be created in a package that
-imports from the version module in its `__init__.py`.  It should be noted that
-this is generally preferable to writing these variables directly into
-`__init__.py`, since this provides more control and is less likely to
-unexpectedly break things in `__init__.py`.
+imports from the version module in its ``__init__.py``.  It should be noted
+that this is generally preferable to writing these variables directly into
+``__init__.py``, since this provides more control and is less likely to
+unexpectedly break things in ``__init__.py``.
 
 stsci.distutils.hooks.version_pre_command_hook
 ''''''''''''''''''''''''''''''''''''''''''''''

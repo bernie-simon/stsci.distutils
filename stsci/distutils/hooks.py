@@ -74,11 +74,11 @@ def use_packages_root(config):
     Use this when the root of your package source tree is not in
     the same directory with the setup.py
 
-    Config Usage: ::
+    Config Usage::
 
         [files]
         packages_root = lib
-        ; for installing pkgname from lib/pkgname/*.py
+        # for installing pkgname from lib/pkgname/*.py
 
         [global]
         setup_hooks = stsci.distutils.hooks.use_packages_root
@@ -127,12 +127,12 @@ def tag_svn_revision(config):
     to work.  It does not examine the working copy metadata directly.
 
 
-    Config Usage: ::
+    Config Usage::
 
         [global]
         setup_hooks = stsci.distutils.hooks.tag_svn_revision
 
-    You should write exactly this in your package's __init__.py:
+    You should write exactly this in your package's ``__init__.py``::
 
         from .version import *
 
@@ -186,19 +186,17 @@ def tag_svn_revision(config):
 
 def version_hook(function_name, package_dir, packages, name, version):
     """This command hook creates an version.py file in each package that
-    requires it.  This is by determining if the package's __init__ tries
+    requires it.  This is by determining if the package's ``__init__.py`` tries
     to import or import from the version module.
 
     version.py will not be created in packages that don't use it.  It should
     only be used by the top-level package of the project.
 
-    Don't use this function directly--instead use version_setup_hook() or
-    version_pre_command_hook() which know how to retrieve the required metadata
-    depending on the context they are run in.
+    Don't use this function directly--instead use :func:`version_setup_hook` or
+    :func:`version_pre_command_hook` which know how to retrieve the required
+    metadata depending on the context they are run in.
 
-    Config Usage: ::
-
-        Not called directly from the config file.  See version_setup_hook
+    Not called directly from the config file.  See :func:`version_setup_hook`.
 
     """
 
@@ -241,30 +239,31 @@ def version_hook(function_name, package_dir, packages, name, version):
 def version_setup_hook(config):
     """Creates a Python module called version.py which currently contains four
     variables:
-    
+
     * ``__version__`` (the release version)
     * ``__svn_revision__`` (the SVN revision info as returned by the ``svnversion``
       command)
     * ``__svn_full_info__`` (as returned by the ``svn info`` command)
     * ``__setup_datetime__`` (the date and time that setup.py was last run).
-    
-    These variables can be imported in the package's `__init__.py` for degugging
-    purposes.  The version.py module will *only* be created in a package that
-    imports from the version module in its `__init__.py`.  It should be noted that
-    this is generally preferable to writing these variables directly into
-    `__init__.py`, since this provides more control and is less likely to
-    unexpectedly break things in `__init__.py`.
 
-    Config Usage: ::
+    These variables can be imported in the package's ``__init__.py`` for
+    degugging purposes.  The version.py module will *only* be created in a
+    package that imports from the version module in its ``__init__.py``.  It
+    should be noted that this is generally preferable to writing these
+    variables directly into ``__init__.py``, since this provides more control
+    and is less likely to unexpectedly break things in ``__init__.py``.
+
+    Config Usage::
 
         [global]
         setup-hooks = stsci.distutils.hooks.version_setup_hook
 
-    You should write exactly this in your package's __init__.py:
+    You should write exactly this in your package's ``__init__.py``::
 
         from .version import *
 
     """
+
     if is_display_option(ignore=['--version']):
         return
 
@@ -280,17 +279,18 @@ def version_setup_hook(config):
 
 
 def version_pre_command_hook(command_obj):
-    """This command hook creates an version.py file in each package that
-    requires it.  This is by determining if the package's __init__ tries
-    to import or import from the version module.
+    """
+    .. deprecated:: 0.3
+        Use :func:`version_setup_hook` instead; it's generally safer to
+        check/update the version.py module on every setup.py run instead of on
+        specific commands.
+
+    This command hook creates an version.py file in each package that requires
+    it.  This is by determining if the package's ``__init__.py`` tries to
+    import or import from the version module.
 
     version.py will not be created in packages that don't use it.  It should
     only be used by the top-level package of the project.
-
-    Config Usage: ::
-
-        TODO: not used ?
-
     """
 
     if is_display_option():
@@ -306,16 +306,16 @@ def version_pre_command_hook(command_obj):
 
 
 def version_post_command_hook(command_obj):
-    """Cleans up a previously generated version.py in order to avoid
+    """
+    .. deprecated:: 0.3
+        This hook was meant to complement :func:`version_pre_command_hook`,
+        also deprecated.
+
+    Cleans up a previously generated version.py in order to avoid
     clutter.
 
     Only removes the file if we're in an SVN working copy and the file is not
     already under version control.
-
-    Config Usage: ::
-
-        TODO: not used?
-
     """
 
     package_dir = command_obj.distribution.package_dir.get('', '.')
@@ -337,9 +337,16 @@ def numpy_extension_hook(command_obj):
     numpy.  It is up to the distribution that uses this hook to require numpy
     as a dependency.
 
-    Config Usage: ::
+    Config Usage::
 
-        TODO
+        [extension=mypackage.extmod]
+        sources =
+            foo.c
+            bar.c
+        include_dirs = numpy
+
+        [build_ext]
+        pre-hook.numpy-extension = stsci.distutils.hooks.numpy_extension_hook
     """
 
     command_name = command_obj.get_command_name()
@@ -375,10 +382,10 @@ def glob_data_files(command_obj):
     Also ensures that data files with relative paths as their targets are
     installed relative install_lib.
 
-    Config Usage: ::
+    Config Usage::
 
         [files]
-        data_files = 
+        data_files =
             target_directory = source_directory/*.foo
             other_target_directory = other_source_directory/*
 
