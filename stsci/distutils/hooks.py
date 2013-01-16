@@ -102,7 +102,7 @@ def use_packages_root(config):
         try :
             reload(sys.modules['stsci'])
         except ImportError :
-            print "IMPORT ERROR FROM RELOAD???"
+            print("IMPORT ERROR FROM RELOAD???")
             import time
             time.sleep(2)
 
