@@ -10,7 +10,9 @@ from .astutils import ImportVisitor, walk
 
 
 def get_svn_version(path='.'):
-    """Uses `svnversion` to get just the latest revision at the given path."""
+    """Uses ``svnversion`` to get just the latest revision at the given
+    path.
+    """
 
     try:
         pipe = subprocess.Popen(['svnversion', path], stdout=subprocess.PIPE,
@@ -25,7 +27,7 @@ def get_svn_version(path='.'):
 
 
 def get_svn_info(path='.'):
-    """Uses `svn info` to get the full information about the working copy at
+    """Uses ``svn info`` to get the full information about the working copy at
     the given path.
     """
 

@@ -19,6 +19,8 @@ VERSION_PY_TEMPLATE = """
 Do not modify this file by hand.
 \"\"\"
 
+__all__ = ['__version__', '__svn_revision__', '__svn_full_info__',
+           '__setup_datetime__']
 
 import datetime
 
@@ -90,23 +92,25 @@ def package_uses_version_py(package_root, package, module_name='version'):
     package.  Returns the full path to the version.py module, regardless of
     whether it already exists.  Otherwise returns False.
 
-    This works by checking whether or not there are any imports from 'version'
-    in the package's __init__.py.
+    This works by checking whether or not there are any imports from the
+    'version' module in the package's ``__init__.py``.
+
+    You should write this in your package's ``__init__.py``::
+
+        from .version import *
+
     """
 
     pdir = os.path.join(package_root, *(package.split('.')))
     init = os.path.join(pdir, '__init__.py')
     if not os.path.exists(init):
-        # Not a valid package
-        # TODO: Maybe issue a warning here?
-        return False
+        raise Exception('Not a valid package - no __init__.py')
 
     try:
         visitor = ImportVisitor()
         walk(init, visitor)
-    except SyntaxError:
-        # TODO: Maybe issue a warning?
-        pass
+    except Exception as e :
+        raise Exception('Not able to parse %s' % init)
 
     found = False
     # Check the import statements parsed from the file for an import of or
