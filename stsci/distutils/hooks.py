@@ -184,7 +184,7 @@ def tag_svn_revision(config):
         metadata['version'] ='%s%d' % (version, rev)
 
 
-def version_hook(function_name, package_dir, packages, name, version):
+def _version_hook(function_name, package_dir, packages, name, version, vdate):
     """This command hook creates an version.py file in each package that
     requires it.  This is by determining if the package's ``__init__.py`` tries
     to import or import from the version module.
@@ -227,6 +227,7 @@ def version_hook(function_name, package_dir, packages, name, version):
                 'hook_function': function_name,
                 'name': name,
                 'version': str(version),
+                'vdate': str(vdate),
                 'svn_revision': str(rev),
                 'svn_full_info': str(svn_info),
                 'setup_datetime': datetime.datetime.now()
@@ -237,14 +238,14 @@ def version_hook(function_name, package_dir, packages, name, version):
 
 
 def version_setup_hook(config):
-    """Creates a Python module called version.py which currently contains four
-    variables:
+    """Creates a Python module called version.py which contains these variables:
 
     * ``__version__`` (the release version)
     * ``__svn_revision__`` (the SVN revision info as returned by the ``svnversion``
       command)
     * ``__svn_full_info__`` (as returned by the ``svn info`` command)
     * ``__setup_datetime__`` (the date and time that setup.py was last run).
+    * ``__vdate__`` (the release version)
 
     These variables can be imported in the package's ``__init__.py`` for
     degugging purposes.  The version.py module will *only* be created in a
@@ -267,15 +268,16 @@ def version_setup_hook(config):
     if is_display_option(ignore=['--version']):
         return
 
-    name = config['metadata'].get('name')
-    version = config['metadata'].get('version', '0.0.0')
+    name        = config['metadata'].get('name')
+    version     = config['metadata'].get('version', '0.0.0')
+    vdate       = config['metadata'].get('vdate', 'unspecified')
     package_dir = config.get('files', {}).get('packages_root', '')
-    packages = config.get('files', {}).get('packages', '')
+    packages    = config.get('files', {}).get('packages', '')
 
     packages = split_multiline(packages)
 
-    version_hook(__name__ + '.version_setup_hook', package_dir, packages,
-                 name, version)
+    _version_hook(__name__ + '.version_setup_hook', package_dir, packages,
+                 name, version, vdate)
 
 
 def version_pre_command_hook(command_obj):
@@ -301,8 +303,8 @@ def version_pre_command_hook(command_obj):
     name = command_obj.distribution.metadata.name
     version = command_obj.distribution.metadata.version
 
-    version_hook(__name__ + '.version_pre_command_hook',package_dir, packages,
-                 name, version)
+    _version_hook(__name__ + '.version_pre_command_hook',package_dir, packages,
+                 name, version, vdate=None)
 
 
 def version_post_command_hook(command_obj):
