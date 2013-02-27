@@ -29,6 +29,17 @@ from .svnutils import get_svn_info, get_svn_version
 from .versionutils import (package_uses_version_py, clean_version_py,
                            update_setup_datetime, VERSION_PY_TEMPLATE)
 
+# For each version.py that we create, we will note the version of
+# stsci.distutils (this package) that created it.  The problem is
+# when the package being installed is stsci.distutils -- we don't
+# know the version yet.  So, if we can't import the version (because
+# it does not exist yet), we declare it to be None and special case
+# it later.
+try :
+    from . import version as my_version
+except ImportError :
+    my_version = None
+
 
 def is_display_option(ignore=None):
     """A hack to test if one of the arguments passed to setup.py is a display
@@ -230,8 +241,23 @@ def _version_hook(function_name, package_dir, packages, name, version, vdate):
                 'vdate': str(vdate),
                 'svn_revision': str(rev),
                 'svn_full_info': str(svn_info),
-                'setup_datetime': datetime.datetime.now()
+                'setup_datetime': datetime.datetime.now(),
         }
+
+        # my_version is version.py for the stsci.distutils package.
+	    # It can be None if we are called during the install of
+	    # stsci.distutils; we are creating the version.py, so it was
+	    # not available to import yet.  If this is what is happening,
+        # we construct it specially.
+        if my_version is None :
+            if  package == 'stsci.distutils' :
+                template_variables['stsci.distutils.version'] = 'Myself (%s)' % version
+            else :
+                # It should never happen that version.py does not
+		        # exist when we are installing any other package.
+                raise Exception('Internal consistency error')
+        else :
+            template_variables['stsci.distutils.version'] = my_version.__version__
 
         with open(version_py, 'w') as f:
             f.write(VERSION_PY_TEMPLATE % template_variables)
