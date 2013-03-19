@@ -102,11 +102,8 @@ def use_packages_root(config):
         try :
             reload(sys.modules['stsci'])
         except ImportError as e:
-            print("IMPORT ERROR FROM RELOAD???")
-            print(e)
-            import time
-            time.sleep(2)
-
+            # doesn't seem to bother anything when this reload() fails
+            pass
 
 def tag_svn_revision(config):
     """
