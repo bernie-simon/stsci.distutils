@@ -17,8 +17,6 @@ from .astutils import ImportVisitor, walk
 VERSION_PY_TEMPLATE = """
 \"\"\"This is an automatically generated file created by %(hook_function)s.
 Do not modify this file by hand.
-
-stsci_distutils_version = %(stsci.distutils.version)r
 \"\"\"
 
 __all__ = ['__version__', '__vdate__', '__svn_revision__', '__svn_full_info__',
@@ -26,14 +24,14 @@ __all__ = ['__version__', '__vdate__', '__svn_revision__', '__svn_full_info__',
 
 import datetime
 
-# what version of stsci.distutils created this version.py
-stsci_distutils_version = %(stsci.distutils.version)r
-
 __version__ = %(version)r
 __vdate__ = %(vdate)r
 __svn_revision__ = %(svn_revision)r
 __svn_full_info__ = %(svn_full_info)r
 __setup_datetime__ = %(setup_datetime)r
+
+# what version of stsci.distutils created this version.py
+stsci_distutils_version = %(stsci_distutils_version)r
 
 
 def update_svn_info():

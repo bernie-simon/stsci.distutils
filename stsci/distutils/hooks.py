@@ -250,19 +250,20 @@ def _version_hook(function_name, package_dir, packages, name, version, vdate):
         }
 
         # my_version is version.py for the stsci.distutils package.
-	    # It can be None if we are called during the install of
-	    # stsci.distutils; we are creating the version.py, so it was
-	    # not available to import yet.  If this is what is happening,
+        # It can be None if we are called during the install of
+        # stsci.distutils; we are creating the version.py, so it was
+        # not available to import yet.  If this is what is happening,
         # we construct it specially.
         if my_version is None :
             if  package == 'stsci.distutils' :
-                template_variables['stsci.distutils.version'] = 'Myself (%s)' % version
-            else :
+                template_variables['stsci_distutils_version'] = version
+            else:
                 # It should never happen that version.py does not
-		        # exist when we are installing any other package.
-                raise Exception('Internal consistency error')
+                # exist when we are installing any other package.
+                raise RuntimeError('Internal consistency error')
         else :
-            template_variables['stsci.distutils.version'] = my_version.__version__
+            template_variables['stsci_distutils_version'] = \
+                    my_version.__version__
 
         with open(version_py, 'w') as f:
             f.write(VERSION_PY_TEMPLATE % template_variables)
@@ -299,11 +300,11 @@ def version_setup_hook(config):
     if is_display_option(ignore=['--version']):
         return
 
-    name        = config['metadata'].get('name')
-    version     = config['metadata'].get('version', '0.0.0')
-    vdate       = config['metadata'].get('vdate', 'unspecified')
+    name = config['metadata'].get('name')
+    version = config['metadata'].get('version', '0.0.0')
+    vdate = config['metadata'].get('vdate', 'unspecified')
     package_dir = config.get('files', {}).get('packages_root', '')
-    packages    = config.get('files', {}).get('packages', '')
+    packages = config.get('files', {}).get('packages', '')
 
     packages = split_multiline(packages)
 
