@@ -10,7 +10,12 @@ import zipfile
 from datetime import datetime
 from setuptools import Distribution
 
-import numpy
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
+from nose import SkipTest
 
 from . import StsciDistutilsTestCase, TESTPACKAGE_REV
 from .util import reload, get_compiler_command, open_config, rmtree
@@ -112,6 +117,9 @@ class TestHooks(StsciDistutilsTestCase):
 
     def test_numpy_extension_hook(self):
         """Test basic functionality of the Numpy extension hook."""
+
+        if numpy is None:
+            raise SkipTest("numpy is required to run this test")
 
         compiler_cmd = get_compiler_command()
 
