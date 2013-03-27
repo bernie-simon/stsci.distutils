@@ -5,6 +5,7 @@ import glob
 import os
 import sys
 import tarfile
+import time
 import zipfile
 
 from datetime import datetime
@@ -106,10 +107,14 @@ class TestHooks(StsciDistutilsTestCase):
         prev = stsci.testpackage.__setup_datetime__
         now = datetime.now()
         # Rebuild
+        # So that there's less chance for ambiguity
+        time.sleep(1)
         self.run_setup('build')
 
         reload(stsci.testpackage.version)
         reload(stsci.testpackage)
+
+        import stsci.testpackage
 
         assert hasattr(stsci.testpackage, '__setup_datetime__')
         assert stsci.testpackage.__setup_datetime__ > now
