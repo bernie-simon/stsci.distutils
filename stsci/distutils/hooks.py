@@ -174,6 +174,12 @@ def tag_svn_revision(config):
                 rev = mod.__svn_revision__
                 break
 
+        # Cleanup
+        names = set([package, package + '.'])
+        for modname in sys.modules.keys():
+            if modname in names:
+                del sys.modules[modname]
+
         if rev is None:
             # A .version module didn't exist or was incomplete; try calling
             # svnversion directly
@@ -219,7 +225,8 @@ def _version_hook(function_name, package_dir, packages, name, version, vdate):
             continue
 
         rev = get_svn_version()
-        if (not rev or not rev[0] in string.digits) and os.path.exists(version_py):
+        if ((not rev or not rev[0] in string.digits) and
+                os.path.exists(version_py)):
             # If were unable to determine an SVN revision and the version.py
             # already exists, just update the __setup_datetime__ and leave the
             # rest of the file untouched
@@ -269,7 +276,7 @@ def version_setup_hook(config):
       command)
     * ``__svn_full_info__`` (as returned by the ``svn info`` command)
     * ``__setup_datetime__`` (the date and time that setup.py was last run).
-    * ``__vdate__`` (the release version)
+    * ``__vdate__`` (the release date)
 
     These variables can be imported in the package's ``__init__.py`` for
     degugging purposes.  The version.py module will *only* be created in a
