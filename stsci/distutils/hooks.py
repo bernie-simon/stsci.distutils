@@ -112,7 +112,7 @@ def use_packages_root(config):
     if 'stsci' in sys.modules:
         try :
             reload(sys.modules['stsci'])
-        except ImportError as e:
+        except ImportError:
             # doesn't seem to bother anything when this reload() fails
             pass
 
@@ -176,8 +176,8 @@ def tag_svn_revision(config):
 
         # Cleanup
         names = set([package, package + '.'])
-        for modname in sys.modules.keys():
-            if modname in names:
+        for modname in list(sys.modules):
+            if modname == package or modname.startswith(package + '.'):
                 del sys.modules[modname]
 
         if rev is None:
