@@ -81,21 +81,6 @@ try:
         setup_requires=['d2to1>=0.2.9'],
         namespace_packages=['stsci'], packages=['stsci'],
         d2to1=True,
-        use_2to3=True,
-        zip_safe=False,
-        entry_points={
-            'zest.releaser.releaser.before': [
-                'fix_sdist_format = stsci.distutils.release:fix_sdist_format'
-            ],
-            'zest.releaser.releaser.after': [
-                'add_to_stsci_package_index = '
-                'stsci.distutils.release:add_to_stsci_package_index'
-            ],
-            'zest.releaser.postreleaser.before': [
-                'fix_dev_version_template = '
-                'stsci.distutils.release:fix_dev_version_template'
-            ]
-        }
     )
 finally:
     if has_issue205:
