@@ -1,7 +1,7 @@
 Changelog
 ===========
 
-0.3.2 (unreleased)
+0.3.2 (2013-03-27)
 ------------------
 
 - Fixed a bug in the version hook that could occur if the svnversion command
