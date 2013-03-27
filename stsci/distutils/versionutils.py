@@ -112,8 +112,8 @@ def package_uses_version_py(package_root, package, module_name='version'):
     try:
         visitor = ImportVisitor()
         walk(init, visitor)
-    except Exception as e :
-        raise Exception('Not able to parse %s' % init)
+    except:
+        raise SyntaxError('Not able to parse %s' % init)
 
     found = False
     # Check the import statements parsed from the file for an import of or
