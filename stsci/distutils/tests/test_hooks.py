@@ -218,6 +218,8 @@ class TestHooks(StsciDistutilsTestCase):
             return install_cmd.install_lib
 
         def test_install_scheme(args):
+            if numpy is None:
+                raise SkipTest("numpy is required to run this test")
             # This general code should work to test the files in a variety of
             # install schemes depending on args
             if os.path.exists('temp'):
