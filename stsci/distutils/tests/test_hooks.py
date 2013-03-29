@@ -5,12 +5,18 @@ import glob
 import os
 import sys
 import tarfile
+import time
 import zipfile
 
 from datetime import datetime
 from setuptools import Distribution
 
-import numpy
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
+from nose import SkipTest
 
 from . import StsciDistutilsTestCase, TESTPACKAGE_REV
 from .util import reload, get_compiler_command, open_config, rmtree
@@ -101,10 +107,14 @@ class TestHooks(StsciDistutilsTestCase):
         prev = stsci.testpackage.__setup_datetime__
         now = datetime.now()
         # Rebuild
+        # So that there's less chance for ambiguity
+        time.sleep(1)
         self.run_setup('build')
 
         reload(stsci.testpackage.version)
         reload(stsci.testpackage)
+
+        import stsci.testpackage
 
         assert hasattr(stsci.testpackage, '__setup_datetime__')
         assert stsci.testpackage.__setup_datetime__ > now
@@ -112,6 +122,9 @@ class TestHooks(StsciDistutilsTestCase):
 
     def test_numpy_extension_hook(self):
         """Test basic functionality of the Numpy extension hook."""
+
+        if numpy is None:
+            raise SkipTest("numpy is required to run this test")
 
         compiler_cmd = get_compiler_command()
 
@@ -205,6 +218,8 @@ class TestHooks(StsciDistutilsTestCase):
             return install_cmd.install_lib
 
         def test_install_scheme(args):
+            if numpy is None:
+                raise SkipTest("numpy is required to run this test")
             # This general code should work to test the files in a variety of
             # install schemes depending on args
             if os.path.exists('temp'):

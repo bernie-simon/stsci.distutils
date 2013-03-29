@@ -112,7 +112,7 @@ def use_packages_root(config):
     if 'stsci' in sys.modules:
         try :
             reload(sys.modules['stsci'])
-        except ImportError as e:
+        except ImportError:
             # doesn't seem to bother anything when this reload() fails
             pass
 
@@ -174,6 +174,12 @@ def tag_svn_revision(config):
                 rev = mod.__svn_revision__
                 break
 
+        # Cleanup
+        names = set([package, package + '.'])
+        for modname in list(sys.modules):
+            if modname == package or modname.startswith(package + '.'):
+                del sys.modules[modname]
+
         if rev is None:
             # A .version module didn't exist or was incomplete; try calling
             # svnversion directly
@@ -219,7 +225,8 @@ def _version_hook(function_name, package_dir, packages, name, version, vdate):
             continue
 
         rev = get_svn_version()
-        if (not rev or not rev[0] in string.digits) and os.path.exists(version_py):
+        if ((not rev or not rev[0] in string.digits) and
+                os.path.exists(version_py)):
             # If were unable to determine an SVN revision and the version.py
             # already exists, just update the __setup_datetime__ and leave the
             # rest of the file untouched
@@ -243,19 +250,20 @@ def _version_hook(function_name, package_dir, packages, name, version, vdate):
         }
 
         # my_version is version.py for the stsci.distutils package.
-	    # It can be None if we are called during the install of
-	    # stsci.distutils; we are creating the version.py, so it was
-	    # not available to import yet.  If this is what is happening,
+        # It can be None if we are called during the install of
+        # stsci.distutils; we are creating the version.py, so it was
+        # not available to import yet.  If this is what is happening,
         # we construct it specially.
         if my_version is None :
             if  package == 'stsci.distutils' :
-                template_variables['stsci.distutils.version'] = 'Myself (%s)' % version
-            else :
+                template_variables['stsci_distutils_version'] = version
+            else:
                 # It should never happen that version.py does not
-		        # exist when we are installing any other package.
-                raise Exception('Internal consistency error')
+                # exist when we are installing any other package.
+                raise RuntimeError('Internal consistency error')
         else :
-            template_variables['stsci.distutils.version'] = my_version.__version__
+            template_variables['stsci_distutils_version'] = \
+                    my_version.__version__
 
         with open(version_py, 'w') as f:
             f.write(VERSION_PY_TEMPLATE % template_variables)
@@ -269,7 +277,7 @@ def version_setup_hook(config):
       command)
     * ``__svn_full_info__`` (as returned by the ``svn info`` command)
     * ``__setup_datetime__`` (the date and time that setup.py was last run).
-    * ``__vdate__`` (the release version)
+    * ``__vdate__`` (the release date)
 
     These variables can be imported in the package's ``__init__.py`` for
     degugging purposes.  The version.py module will *only* be created in a
@@ -292,11 +300,11 @@ def version_setup_hook(config):
     if is_display_option(ignore=['--version']):
         return
 
-    name        = config['metadata'].get('name')
-    version     = config['metadata'].get('version', '0.0.0')
-    vdate       = config['metadata'].get('vdate', 'unspecified')
+    name = config['metadata'].get('name')
+    version = config['metadata'].get('version', '0.0.0')
+    vdate = config['metadata'].get('vdate', 'unspecified')
     package_dir = config.get('files', {}).get('packages_root', '')
-    packages    = config.get('files', {}).get('packages', '')
+    packages = config.get('files', {}).get('packages', '')
 
     packages = split_multiline(packages)
 

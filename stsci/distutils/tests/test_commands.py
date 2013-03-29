@@ -3,12 +3,21 @@ from __future__ import with_statement
 import os
 import sys
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
+from nose import SkipTest
+
 from . import StsciDistutilsTestCase
 from .util import get_compiler_command, open_config
 
 
 class TestCommands(StsciDistutilsTestCase):
     def test_build_optional_ext(self):
+        if numpy is None:
+            raise SkipTest("numpy is required to run this test")
         # The test extension in the test package is already configured to be
         # "optional" by default--we'll do one test build to make sure that goes
         # smoothly
