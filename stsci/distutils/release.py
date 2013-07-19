@@ -44,7 +44,7 @@ def is_stsci_project(workingdir):
 
 def fix_dev_version_template(data):
     """
-    A postreleaser.middle hook to change the dev_version_template from the
+    A postreleaser.before hook to change the dev_version_template from the
     annoying default of 'x.y.z.dev0' to just 'x.y.z.dev' without the 0.
     """
 
