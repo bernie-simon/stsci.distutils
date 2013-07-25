@@ -73,7 +73,7 @@ if '.dev' in __version__:
             # If updating the __svn_full_info__ succeeded then use its output
             # to find the base of the working copy and use svnversion to get
             # the svn revision.
-            for line in __svn_full_info__:
+            for line in __svn_full_info__.splitlines():
                 if line.startswith('Working Copy Root Path'):
                     path = line.split(':', 1)[1].strip()
                     break
