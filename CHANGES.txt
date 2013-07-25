@@ -1,7 +1,7 @@
 Changelog
 ===========
 
-0.3.3 (unreleased)
+0.3.3 (2013-07-25)
 ------------------
 
 - Updated the import-time SVN revision update mechanism in the ``version.py``
