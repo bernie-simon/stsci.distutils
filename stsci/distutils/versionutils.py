@@ -61,9 +61,9 @@ if '.dev' in __version__:
                     lines.append(line)
 
                 if not lines:
-                    __svn_full_info__ = 'unknown'
+                    __svn_full_info__ = ['unknown']
                 else:
-                    __svn_full_info__ = '\\n'.join(lines)
+                    __svn_full_info__ = lines
             else:
                 run_svnversion = False
         except OSError:
@@ -73,7 +73,7 @@ if '.dev' in __version__:
             # If updating the __svn_full_info__ succeeded then use its output
             # to find the base of the working copy and use svnversion to get
             # the svn revision.
-            for line in __svn_full_info__.splitlines():
+            for line in __svn_full_info__:
                 if line.startswith('Working Copy Root Path'):
                     path = line.split(':', 1)[1].strip()
                     break
@@ -88,6 +88,10 @@ if '.dev' in __version__:
                         __svn_revision__ = stdout
             except OSError:
                 pass
+
+        # Convert __svn_full_info__ back to a string
+        if isinstance(__svn_full_info__, list):
+            __svn_full_info__ = '\\n'.join(__svn_full_info__)
 
 
     update_svn_info()
