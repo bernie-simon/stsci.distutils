@@ -110,11 +110,18 @@ def use_packages_root(config):
     # Reload the stsci namespace package in case any new paths can be added to
     # it from the new sys.path entry
     if 'stsci' in sys.modules:
-        try :
-            reload(sys.modules['stsci'])
-        except ImportError:
-            # doesn't seem to bother anything when this reload() fails
-            pass
+        mod = sys.modules['stsci']
+        if not hasattr(mod, '__loader__'):
+            # Workaround for Python bug #17099 on Python 3.3, where reload()
+            # crashes if a module doesn't have an __loader__ attribute
+            del sys.modules['stsci']
+            import stsci
+        else:
+            try :
+                reload(sys.modules['stsci'])
+            except ImportError:
+                # doesn't seem to bother anything when this reload() fails
+                pass
 
 
 def tag_svn_revision(config):
