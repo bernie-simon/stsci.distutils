@@ -108,14 +108,20 @@ def use_packages_root(config):
             sys.path.insert(0, root)
 
     # Reload the stsci namespace package in case any new paths can be added to
-    # it from the new sys.path entry
+    # it from the new sys.path entry; depending on how the namespace packages
+    # are installed this may fail--specifically if it's using the old
+    # setuptools-based .pth approach there is not importable package called
+    # 'stsci' that can be imported by itself.
     if 'stsci' in sys.modules:
         mod = sys.modules['stsci']
-        if not hasattr(mod, '__loader__'):
+        if sys.version_info[:2] >= (3, 3) and not hasattr(mod, '__loader__'):
             # Workaround for Python bug #17099 on Python 3.3, where reload()
             # crashes if a module doesn't have an __loader__ attribute
             del sys.modules['stsci']
-            import stsci
+            try:
+                import stsci
+            except ImportError:
+                pass
         else:
             try :
                 reload(sys.modules['stsci'])
