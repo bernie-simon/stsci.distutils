@@ -1,7 +1,7 @@
 Changelog
 ===========
 
-0.3.4 (unreleased)
+0.3.4 (2013-07-31)
 ------------------
 
 - Updated the check for ``__loader__`` added in v0.3.3 to only perform
