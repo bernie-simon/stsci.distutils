@@ -1,10 +1,18 @@
 Changelog
 ===========
 
-0.3.4 (unreleased)
+0.3.5 (unreleased)
 ------------------
 
-- Nothing yet.
+- Nothing changed yet.
+
+
+0.3.4 (2013-07-31)
+------------------
+
+- Updated the check for ``__loader__`` added in v0.3.3 to only perform
+  that check on Python >= 3.3, since the issue doesn't apply to older
+  Python versions.
 
 
 0.3.3 (2013-07-25)
