@@ -143,7 +143,7 @@ class TestHooks(StsciDistutilsTestCase):
             # compile a c file to an object, so that should include all the
             # include paths.  This is of course not universally true, but it
             # should hold true for this test case
-            for path in [numpy.get_include(), numpy.get_numarray_include()]:
+            for path in [numpy.get_include()]:
                 assert '-I' + path in args
             break
 
@@ -162,7 +162,7 @@ class TestHooks(StsciDistutilsTestCase):
                 continue
             if args[0] != compiler_cmd:
                 continue
-            for path in [numpy.get_include(), numpy.get_numarray_include()]:
+            for path in [numpy.get_include()]:
                 assert '-I' + path not in args
 
     def test_glob_data_files(self):
