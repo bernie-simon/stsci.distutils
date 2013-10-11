@@ -412,6 +412,7 @@ def numpy_extension_hook(command_obj):
                          'Please install Numpy on your system first.\n\n')
         sys.exit(1)
 
+    #includes = [numpy.get_include()]
     includes = [numpy.get_numarray_include(), numpy.get_include()]
     for extension in command_obj.extensions:
         if 'numpy' not in extension.include_dirs:
