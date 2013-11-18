@@ -7,7 +7,9 @@ and a different version for 2.5.
 
 
 import os
+import sys
 
+from distutils import log
 
 try:
     import ast # Python >= 2.6
@@ -21,11 +23,14 @@ try:
 
         try:
             tree = ast.parse(open(filename, 'r').read())
-        except SyntaxError:
+        except SyntaxError, e:
+            if sys.version_info[0] < 3:
+                log.warn('SyntaxError while parsing file %s: %s' %
+                         (filename, str(e)))
+                return
             # We're probably in Python 3 and looking at a file intended for
             # Python 2.  Otherwise there's an unintended SyntaxError in the
             # file, so there are bigger problems anyways
-            # TODO: Maybe issue a warning?
             try:
                 import lib2to3.refactor
 
@@ -74,27 +79,27 @@ except ImportError:
             for name in node.names:
                 self.importfroms.add((node.modname, name[0], name[1]))
 
-try:
-    import lib2to3.refactor
 
-    class StringRefactoringTool(lib2to3.refactor.RefactoringTool):
-        """A RefactoringTool that saves refactored files as strings in the
-        self.refactored dict rather than outputting to actual files.
+if sys.version_info[0] >= 3:
+    try:
+        import lib2to3.refactor
 
-        This is used in case we're running in Python 3 and need to refactor a
-        file before parsing its syntax tree.
-        """
+        class StringRefactoringTool(lib2to3.refactor.RefactoringTool):
+            """A RefactoringTool that saves refactored files as strings in the
+            self.refactored dict rather than outputting to actual files.
 
-        def __init__(self, fixer_names, options=None, explicit=None):
-            super(StringRefactoringTool, self).__init__(fixer_names, options,
-                                                        explicit)
-            self.refactored = {}
+            This is used in case we're running in Python 3 and need to refactor
+            a file before parsing its syntax tree.
+            """
 
-        def write_file(self, new_text, filename, old_text, encoding=None):
-            self.refactored[filename] = new_text
+            def __init__(self, fixer_names, options=None, explicit=None):
+                super(StringRefactoringTool, self).__init__(fixer_names,
+                                                            options,
+                                                            explicit)
+                self.refactored = {}
 
-except ImportError:
-    pass
+            def write_file(self, new_text, filename, old_text, encoding=None):
+                self.refactored[filename] = new_text
 
-
-
+    except ImportError:
+        pass

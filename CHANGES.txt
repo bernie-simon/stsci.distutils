@@ -4,7 +4,9 @@ Changelog
 0.3.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed an obscure issue that could occur when trying to install with
+  easy_install on Python 2 systems that have lib2to3 installed but have never
+  used it.
 
 
 0.3.4 (2013-07-31)
