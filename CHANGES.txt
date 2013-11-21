@@ -1,7 +1,7 @@
 Changelog
 ===========
 
-0.3.6 (2013-11-21)
+0.3.6 (unreleased)
 ------------------
 
 - Fixed a syntax error in Python 3 that was introduced in 0.3.5.  This
