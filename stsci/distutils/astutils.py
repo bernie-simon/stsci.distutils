@@ -23,8 +23,9 @@ try:
 
         try:
             tree = ast.parse(open(filename, 'r').read())
-        except SyntaxError, e:
+        except SyntaxError:
             if sys.version_info[0] < 3:
+                e = sys.exc_info()[1]
                 log.warn('SyntaxError while parsing file %s: %s' %
                          (filename, str(e)))
                 return

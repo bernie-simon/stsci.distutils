@@ -4,7 +4,9 @@ Changelog
 0.3.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed a syntax error in Python 3 that was introduced in 0.3.5.  This
+  could occur very early in the setup such that it bailed before even 2to3
+  could run on the rest of the package.
 
 
 0.3.5 (2013-11-18)
