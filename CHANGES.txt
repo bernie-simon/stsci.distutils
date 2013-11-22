@@ -1,10 +1,26 @@
 Changelog
 ===========
 
-0.3.5 (unreleased)
+0.3.7 (unreleased)
 ------------------
 
 - Nothing changed yet.
+
+
+0.3.6 (2013-11-21)
+------------------
+
+- Fixed a syntax error in Python 3 that was introduced in 0.3.5.  This
+  could occur very early in the setup such that it bailed before even 2to3
+  could run on the rest of the package.
+
+
+0.3.5 (2013-11-18)
+------------------
+
+- Fixed an obscure issue that could occur when trying to install with
+  easy_install on Python 2 systems that have lib2to3 installed but have never
+  used it.
 
 
 0.3.4 (2013-07-31)
