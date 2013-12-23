@@ -4,7 +4,9 @@ Changelog
 0.3.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Avoid using ``Popen.stdout`` directly in the version.py SVN revision
+  auto-update script to avoid possible ResourceWarnings on Python >= 3.2.
+  See https://github.com/spacetelescope/PyFITS/issues/45
 
 
 0.3.6 (2013-11-21)
