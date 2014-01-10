@@ -52,9 +52,10 @@ if '.dev' in __version__:
             pipe = subprocess.Popen(['svn', 'info', path],
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-            if pipe.wait() == 0:
+            stdout, _ = pipe.communicate()
+            if pipe.returncode == 0:
                 lines = []
-                for line in pipe.stdout.readlines():
+                for line in stdout.splitlines():
                     line = line.decode('latin1').strip()
                     if not line:
                         continue
@@ -82,8 +83,9 @@ if '.dev' in __version__:
                 pipe = subprocess.Popen(['svnversion', path],
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
-                if pipe.wait() == 0:
-                    stdout = pipe.stdout.read().decode('latin1').strip()
+                stdout, _ = pipe.communicate()
+                if pipe.returncode == 0:
+                    stdout = stdout.decode('latin1').strip()
                     if stdout and stdout[0] in string.digits:
                         __svn_revision__ = stdout
             except OSError:
