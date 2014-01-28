@@ -76,6 +76,9 @@ def fix_sdist_format(data):
     Releaser._sdist_options = _my_sdist_options
 
 
+# TODO: This package index is no longer being maintained, so this hook can
+# be removed in the next version or so.  I don't think anyone is using it
+# though.
 def add_to_stsci_package_index(data):
     """
     A releaser.after hook to copy the source distribution to STScI's local
