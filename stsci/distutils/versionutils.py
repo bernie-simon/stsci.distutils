@@ -118,7 +118,7 @@ def package_uses_version_py(package_root, package, module_name='version'):
     pdir = os.path.join(package_root, *(package.split('.')))
     init = os.path.join(pdir, '__init__.py')
     if not os.path.exists(init):
-        raise Exception('Not a valid package - no __init__.py')
+        raise Exception('Not a valid package - no __init__.py (%s)' %init)
 
     try:
         visitor = ImportVisitor()
