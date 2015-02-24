@@ -24,7 +24,7 @@ class StsciDistutilsTestCase(object):
                                   'checkout', TESTPACKAGE_URL, cls.wc_dir],
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE)
-        except OSError, e:
+        except OSError as e:
             raise nose.SkipTest('svn unavailable to checkout out test '
                                 'package: %s' % e)
 

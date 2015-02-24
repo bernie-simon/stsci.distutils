@@ -3,8 +3,10 @@ from distutils.command.build_ext import build_ext
 from distutils.errors import DistutilsError, CCompilerError, CompileError
 from distutils.util import strtobool
 
-from ConfigParser import ConfigParser
-
+try:
+    from ConfigParser import ConfigParser
+except ImportError:
+    from configparser import ConfigParser
 
 class build_optional_ext(build_ext):
     """This is a version of the build_ext command that allows specific
@@ -33,7 +35,7 @@ class build_optional_ext(build_ext):
         cfg = ConfigParser()
         try:
             cfg.read('setup.cfg')
-        except Exception, e:
+        except Exception as e:
             log.warn('Failed to read setup.cfg: %s; proceeding as though '
                      'there are no optional extensions' % e)
             return
@@ -75,7 +77,7 @@ class build_optional_ext(build_ext):
     def build_extension(self, ext):
         try:
             build_ext.build_extension(self, ext)
-        except (CCompilerError, DistutilsError, CompileError), e:
+        except (CCompilerError, DistutilsError, CompileError) as e:
             if not hasattr(ext, '_optional') or not ext._optional:
                 raise
             log.warn('building optional extension "%s" failed: %s' %
