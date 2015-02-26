@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """Hooks for zest.releaser specifically for STScI software"""
 
 
@@ -6,7 +8,11 @@ import os
 import shutil
 import sys
 
-from ConfigParser import ConfigParser
+if sys.version < '3':
+    from ConfigParser import ConfigParser
+    input = raw_input
+else:
+    from configParser import ConfigParser
 
 from setuptools.dist import Distribution
 from zest.releaser.utils import ask
@@ -108,7 +114,7 @@ def add_to_stsci_package_index(data):
     answer = ''
     while not answer:
         try:
-            answer = raw_input(question).strip()
+            answer = input(question).strip()
             if not answer:
                 if package_path:
                     # The user simple pressed enter, so use the supplied
@@ -152,7 +158,7 @@ def add_to_stsci_package_index(data):
                         "Then press enter to try again (or hit Ctrl-C to "
                         "cancel).  Go ahead, I'll wait..." %
                         (data['tagdir'], data['tagdir']))
-                    raw_input()
+                    input()
                 except KeyboardInterrupt:
                     return
 
@@ -186,4 +192,4 @@ def add_to_stsci_package_index(data):
     finally:
         os.chdir(old_cwd)
 
-    print 'Finished adding package to %s.' % PACKAGE_INDEX_URL
+    print ('Finished adding package to %s.' % PACKAGE_INDEX_URL)

@@ -10,7 +10,11 @@ try:
 except NameError:
     from imp import reload
 
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except ImportError:
+    from configparser import ConfigParser
+
 from distutils.ccompiler import new_compiler
 from distutils.msvccompiler import MSVCCompiler
 from distutils.sysconfig import customize_compiler

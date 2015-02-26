@@ -25,6 +25,11 @@ except NameError:
     # python 3
     from imp import reload
 
+if sys.version < '3':
+    string_types = basestring
+else:
+    string_types = str
+
 from .svnutils import get_svn_info, get_svn_version
 from .versionutils import (package_uses_version_py, clean_version_py,
                            update_setup_datetime, VERSION_PY_TEMPLATE)
@@ -452,7 +457,7 @@ def glob_data_files(command_obj):
     data_files = command_obj.data_files
 
     for idx, val in enumerate(data_files[:]):
-        if isinstance(val, basestring):
+        if isinstance(val, string_types):
             # Support the rare, deprecated case where just a filename is given
             filenames = glob.glob(val)
             del data_files[idx]
