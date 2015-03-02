@@ -6,9 +6,6 @@ from __future__ import with_statement
 import os
 import subprocess
 
-from .astutils import ImportVisitor, walk
-
-
 def get_svn_version(path='.'):
     """Uses ``svnversion`` to get just the latest revision at the given
     path.
