@@ -8,7 +8,7 @@ import os
 import shutil
 import sys
 
-if sys.version < '3':
+if sys.version_info[0] < 3:
     from ConfigParser import ConfigParser
     input = raw_input
 else:

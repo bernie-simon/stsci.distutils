@@ -25,7 +25,7 @@ except NameError:
     # python 3
     from imp import reload
 
-if sys.version < '3':
+if sys.version_info[0] < 3:
     string_types = basestring
 else:
     string_types = str
@@ -193,7 +193,6 @@ def tag_svn_revision(config):
                 break
 
         # Cleanup
-        names = set([package, package + '.'])
         for modname in list(sys.modules):
             if modname == package or modname.startswith(package + '.'):
                 del sys.modules[modname]
