@@ -17,7 +17,7 @@ except ImportError:
 
 from distutils.ccompiler import new_compiler
 from distutils.msvccompiler import MSVCCompiler
-from distutils.sysconfig import customize_compiler
+from distutils.sysconfig import customize_compiler, get_config_vars
 
 
 @contextlib.contextmanager
@@ -35,6 +35,7 @@ def get_compiler_command():
     system used by distutils to build C extensions.
     """
 
+    get_config_vars()
     compiler = new_compiler()
     customize_compiler(compiler)
     if isinstance(compiler, MSVCCompiler):
